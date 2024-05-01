@@ -211,7 +211,7 @@ class UpdateSubjectGradeView(APIView):
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(TEACHER), name='dispatch')
 class DeleteSubjectGradeView(APIView):
     authentication_classes = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -231,7 +231,7 @@ class DeleteSubjectGradeView(APIView):
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(TEACHER), name='dispatch')
 class ListSubjectGradeView(APIView, CustomPagination):
     authentication_classes = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -252,7 +252,7 @@ class ListSubjectGradeView(APIView, CustomPagination):
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(TEACHER), name='dispatch')
 class CreateSubjectGradeView(APIView):
     authentication_classes = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -274,7 +274,7 @@ class CreateSubjectGradeView(APIView):
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(TEACHER), name='dispatch')
 class ChangeStatusSubjectGradeView(APIView):
     authentication_classes = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]

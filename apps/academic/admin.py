@@ -20,3 +20,5 @@ admin.site.register(StudentClass)
 admin.site.register(SkillSettings)
 admin.site.register(SubjectGrade)
 admin.site.register(SkillGrade)
+admin.site.register(StudentPresence)
+
