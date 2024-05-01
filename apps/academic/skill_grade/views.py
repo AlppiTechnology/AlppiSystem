@@ -13,7 +13,7 @@ from alppi.auth.authentication import JwtAutenticationAlppi
 from alppi.auth.permissions import HasPermission, IsViewAllowed
 from alppi.responses import ResponseHelper
 from alppi.utils.decorators import permission_required
-from alppi.utils.groups import SUPERUSER
+from alppi.utils.groups import TEACHER
 from apps.academic.class_setting.class_setting import BaseClassSetting
 from apps.academic.models import SkillGrade
 from apps.academic.pedagogical_setting.pedagogical_setting import BasePedagogicalSetting
@@ -30,7 +30,7 @@ logger = logging.getLogger('django')
 ALPPIDEVEL = os.getenv('ALPPIDEVEL')
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(TEACHER), name='dispatch')
 class SkillGradeView(APIView):
     authentication_classes = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -80,10 +80,6 @@ class SkillGradeView(APIView):
                     'skill_grades': [],
                 }})
 
-            # Verifica se poderá ser editadas as notas
-            editable = False if date.today() > \
-                school_year_date_info.get('final_date') else True
-
             students_class, error = BSC.list_student_class(class_id)
             if error:
                 return error
@@ -91,7 +87,9 @@ class SkillGradeView(APIView):
             user_ids = [student.get('fk_student_user')
                         for student in students_class]
 
-            is_current_term = validate_term_date(school_year_date_info)
+            # verifica se a data atual corresponde ao termo escolhido
+            # Caso não seja do termo, pode apenas visualizar as notas enteriores, mas não editar
+            editable = is_current_term = validate_term_date(school_year_date_info)
 
             skill_grades = []
             skill_grades = BSG.get_students_skill_grade(
@@ -131,7 +129,7 @@ class SkillGradeView(APIView):
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(TEACHER), name='dispatch')
 class UpdateSkillGradeView(APIView):
     authentication_classes = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -139,7 +137,7 @@ class UpdateSkillGradeView(APIView):
     def put(self, request, class_id, pedagogical_id, skill_id, format=None) -> ResponseHelper:
         try:
             data = request.data
-            term = data.get("term", "1")
+            term = int(request.GET.get("term", '1'))
             skill_grades = data.get("skill_grades", [])
 
             jwt_token = request.jwt_token
@@ -175,10 +173,6 @@ class UpdateSkillGradeView(APIView):
             # Nota maxima do termo da turma
             term_grade = school_year_date_info.get('grade')
 
-            # Verifica se poderá ser editadas as notas
-            editable = False if date.today() > \
-                school_year_date_info.get('final_date') else True
-
             students_class, error = BSC.list_student_class(class_id)
             if error:
                 return error
@@ -186,7 +180,9 @@ class UpdateSkillGradeView(APIView):
             user_ids = [student.get('fk_student_user')
                         for student in students_class]
 
-            is_current_term = validate_term_date(school_year_date_info)
+            # verifica se a data atual corresponde ao termo escolhido
+            # Caso não seja do termo, pode apenas visualizar as notas enteriores, mas não editar
+            editable = is_current_term = validate_term_date(school_year_date_info)
 
             _ = [skill_grades.remove(student_grade) for student_grade in deepcopy(skill_grades)
                  if student_grade.get("fk_student_user") not in user_ids]

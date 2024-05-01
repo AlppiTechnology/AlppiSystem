@@ -37,16 +37,16 @@ class EmployeeView(APIView, BaseEmployee):
     def get(self, request, pk, format=None) -> ResponseHelper:
 
         try:
-            user_obj, error = self.get_object(pk)
+            employee_obj, error = self.get_object(pk)
             if error:
                 return error
 
-            user_groups = [group.name.title()
-                           for group in user_obj.groups.all()]
+            employee_groups = [group.name.title()
+                           for group in employee_obj.groups.all()]
 
-            serializer = EmployeeSerializer(user_obj)
+            serializer = EmployeeSerializer(employee_obj)
             data = serializer.data
-            data['user_groups'] = user_groups
+            data['employee_groups'] = employee_groups
             del (data['password'])
             return  ResponseHelper.HTTP_200({'results': data})
 
@@ -75,40 +75,43 @@ class UpdateEmployeeView(APIView, BaseEmployee):
             # deixa as primeiras letras dos no
             uppercase_first(data, ['username'])
 
-            user_obj, user_data = self.get_user_data(pk)
-            if not user_obj:
+            employee_obj, employee_data = self.get_employee_data(pk)
+            if not employee_obj:
                 # Caso ocora algum erro, é retornado nesse return
-                return user_data
+                return employee_data
 
             # dados que não são alterado ao editar dados dos usuarios
-            data['registration'] = user_data['registration']
-            data['password'] = user_data['password']
-            data['fk_campus'] = user_data['fk_campus']
-            data['last_login'] = user_data['last_login']
+            data['registration'] = employee_data['registration']
+            data['password'] = employee_data['password']
+            data['fk_campus'] = employee_data['fk_campus']
+            data['last_login'] = employee_data['last_login']
             updated_groups = set(data.get('groups'))
 
-            serializer = EmployeeSerializer(user_obj, data=data)
+            # remove o grupo estudante caso envie por engano
+            updated_groups.remove('estudante')
+
+            serializer = EmployeeSerializer(employee_obj, data=data)
             if serializer.is_valid():
 
-                user_groups = (group.name for group in user_obj.groups.all())
+                employee_groups = (group.name for group in employee_obj.groups.all())
                 groups_del = (
-                    group for group in user_groups if group not in updated_groups)
+                    group for group in employee_groups if group not in updated_groups)
                 groups_add = (
-                    group for group in updated_groups if group not in user_groups)
+                    group for group in updated_groups if group not in employee_groups)
 
                 if groups_del:
                     # deletando os grupos do usuario
                     for group_name in groups_del:
                         group = Group.objects.get(name=group_name)
 
-                        user_obj.groups.remove(group)
+                        employee_obj.groups.remove(group)
 
                 if groups_add:
                     # adicionando os grupos ao usuario
                     for group_name in groups_add:
                         group = Group.objects.get(name=group_name)
 
-                        user_obj.groups.add(group)
+                        employee_obj.groups.add(group)
 
                 serializer.save()
 
@@ -134,12 +137,12 @@ class DeleteEmployeeView(APIView, BaseEmployee):
 
     def delete(self, request, pk, format=None) -> ResponseHelper:
         try:
-            user_obj, user_data = self.get_user_data(pk)
-            if not user_obj:
+            employee_obj, employee_data = self.get_employee_data(pk)
+            if not employee_obj:
                 # Caso ocora algum erro, é retornado nesse return
-                return user_data
+                return employee_data
 
-            user_obj.delete()
+            employee_obj.delete()
             message = 'Usuario deletado com sucesso'
             logger.info({'results': message})
             return  ResponseHelper.HTTP_200({'results': message})
@@ -161,7 +164,7 @@ class ListEmployeeView(APIView, CustomPagination, BaseEmployee):
             search = request.GET.get('search', '')
             search_status = request.GET.get('status', '1')
 
-            user_info = User.objects.filter(
+            employee_info = User.objects.filter(
                 Q(username__icontains=search) |
                 Q(registration__contains=search)
             ).exclude(
@@ -169,14 +172,14 @@ class ListEmployeeView(APIView, CustomPagination, BaseEmployee):
             ).values('pk_user', 'registration', 'username', 'is_active')
 
             if search_status:
-                user_info = user_info.filter(is_active=search_status)
+                employee_info = employee_info.filter(is_active=search_status)
 
-            user_info = user_info.order_by(
+            employee_info = employee_info.order_by(
                 '-is_active', 'username', 'registration')
-            user_paginate = self.paginate_queryset(
-                user_info, request, view=self)
+            employee_paginate = self.paginate_queryset(
+                employee_info, request, view=self)
 
-            return  ResponseHelper.HTTP_200({'results': self.get_paginated_response(user_paginate).data})
+            return  ResponseHelper.HTTP_200({'results': self.get_paginated_response(employee_paginate).data})
 
 
         except Exception as error:
@@ -219,6 +222,9 @@ class CreateEmployeeView(APIView, BaseEmployee):
             encrypted_pass = make_password(data.get('password'))
             data['password'] = encrypted_pass
             groups = set(data.get('groups'))
+            
+            # remove o grupo estudante caso envie por engano
+            groups.remove('estudante')
 
             serializer = EmployeeSerializer(data=data)
             if serializer.is_valid():
@@ -226,14 +232,14 @@ class CreateEmployeeView(APIView, BaseEmployee):
                 serializer.save()
                 data_salved = serializer.data
 
-                user_obj, error = self.get_object(data_salved.get('pk_user'))
+                employee_obj, error = self.get_object(data_salved.get('pk_user'))
                 if error:
                     return error
                 # adicionando os grupos ao usuario
                 for group_name in groups:
                     group = Group.objects.get(name=group_name)
 
-                    user_obj.groups.add(group)
+                    employee_obj.groups.add(group)
 
                 data_salved['groups'] = groups
                 del (data_salved['password'])
@@ -242,8 +248,8 @@ class CreateEmployeeView(APIView, BaseEmployee):
             return  ResponseHelper.HTTP_400({'results': serializer.errors})
 
         except Exception as error:
-            if user_obj:
-                user_obj.delete()
+            if employee_obj:
+                employee_obj.delete()
 
             message = 'Problemas ao criar usuario'
             logger.error({'results': message, 'error:': str(error)})
@@ -259,14 +265,14 @@ class ChangeStatusEmployeeView(APIView, BaseEmployee):
     def put(self, request, pk, format=None) -> ResponseHelper:
         try:
             data = request.data
-            user_obj, user_data = self.get_user_data(pk)
-            if not user_obj:
+            employee_obj, employee_data = self.get_employee_data(pk)
+            if not employee_obj:
                 # Caso ocora algum erro, é retornado nesse return
-                return user_data
+                return employee_data
 
-            user_obj.is_active = data.get('is_active')
-            user_obj.edited = datetime.now()
-            user_obj.save()
+            employee_obj.is_active = data.get('is_active')
+            employee_obj.edited = datetime.now()
+            employee_obj.save()
             logger.info('Alterando status do usuario para {}.'.format(
                 data.get('is_active')))
 

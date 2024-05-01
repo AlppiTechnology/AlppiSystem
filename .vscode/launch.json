@@ -8,7 +8,7 @@
             "name": "MS3",
             "type": "debugpy",
             "request": "launch",
-            "program": "H:/Usuários/Codes/Alppi/Microservice_4/manage.py",
+            "program": "H:/Usuários/Codes/Alppi/AlppiSystem/manage.py",
             "args": ["runserver", "7004"],
             "console": "integratedTerminal",
             "justMyCode": true

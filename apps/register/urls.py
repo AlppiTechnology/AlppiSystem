@@ -17,12 +17,12 @@ urlpatterns = [
     path('campus/list/', campus_view.ListCampusView.as_view(), name='list_campus'),
     path('campus/create/', campus_view.CreateCampusView.as_view(), name='create_campus'),
 
-    path('employee/<int:pk>/', employee_view.UserView.as_view(), name='select_employee'),
-    path('employee/<int:pk>/update/', employee_view.UpdateUserView.as_view(), name='update_employee'),
-    path('employee/<int:pk>/delete/', employee_view.DeleteUserView.as_view(), name='delete_employee'),
-    path('employee/<int:pk>/changestatus/', employee_view.ChangeStatusUserView.as_view(), name='change_employee_status'),
-    path('employee/list/', employee_view.ListUserView.as_view(), name='list_employee'),
-    path('employee/create/', employee_view.CreateUserView.as_view(), name='create_employee'),
+    path('employee/<int:pk>/', employee_view.EmployeeView.as_view(), name='select_employee'),
+    path('employee/<int:pk>/update/', employee_view.UpdateEmployeeView.as_view(), name='update_employee'),
+    path('employee/<int:pk>/delete/', employee_view.DeleteEmployeeView.as_view(), name='delete_employee'),
+    path('employee/<int:pk>/changestatus/', employee_view.ChangeStatusEmployeeView.as_view(), name='change_employee_status'),
+    path('employee/list/', employee_view.ListEmployeeView.as_view(), name='list_employee'),
+    path('employee/create/', employee_view.CreateEmployeeView.as_view(), name='create_employee'),
 
     path('student/<int:pk>/', student_view.StudentView.as_view(), name='select_student'),
     path('student/<int:pk>/update/', student_view.UpdateStudentView.as_view(), name='update_student'),
