@@ -192,7 +192,11 @@ class UpdateSubjectGradeView(APIView):
                         return error
 
                     SubjectGrade.objects.filter(
-                        pk_subject_grade=grade.get("pk_subject_grade")
+                        pk_subject_grade=grade.get("pk_subject_grade"),
+                        fk_class = class_id,
+                        fk_term = term,
+                        fk_subject = pedagogical_setting_data.get('fk_subject'),
+                        fk_student_user = grade.get('fk_student_user')
                     ).update(
                         edited=datetime.now(),
                         grade_1=grade.get('grade_1'),
@@ -210,92 +214,3 @@ class UpdateSubjectGradeView(APIView):
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
-
-@method_decorator(permission_required(TEACHER), name='dispatch')
-class DeleteSubjectGradeView(APIView):
-    authentication_classes = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-
-    def delete(self, request, pk, format=None) -> ResponseHelper:
-        try:
-            subject_grade_obj, error = self.get_object(pk)
-            if error:
-                return error
-
-            subject_grade_obj.delete()
-            return ResponseHelper.HTTP_204()
-
-        except Exception as error:
-            message = 'Problemas ao deletar SubjectGrade'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
-
-
-@method_decorator(permission_required(TEACHER), name='dispatch')
-class ListSubjectGradeView(APIView, CustomPagination):
-    authentication_classes = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-
-    def get(self, request, format=None) -> ResponseHelper:
-        try:
-            subject_grades = SubjectGrade.objects.all()
-            subject_grade_paginate = self.paginate_queryset(
-                subject_grades, request, view=self)
-
-            serializer = SubjectGradeSerializer(
-                subject_grade_paginate, many=True)
-            return ResponseHelper.HTTP_200(self.get_paginated_response(serializer.data).data)
-
-        except Exception as error:
-            message = 'Problemas ao listar todos os SubjectGrade.'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
-
-
-@method_decorator(permission_required(TEACHER), name='dispatch')
-class CreateSubjectGradeView(APIView):
-    authentication_classes = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-
-    def post(self, request, format=None) -> ResponseHelper:
-        try:
-            data = request.data
-
-            serializer = SubjectGradeSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return ResponseHelper.HTTP_201({'results': serializer.data})
-
-            return ResponseHelper.HTTP_400({'detail': serializer.errors})
-
-        except Exception as error:
-            message = 'Problemas ao cadastrar SubjectGrade'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
-
-
-@method_decorator(permission_required(TEACHER), name='dispatch')
-class ChangeStatusSubjectGradeView(APIView):
-    authentication_classes = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-
-    def put(self, request, pk, format=None) -> ResponseHelper:
-        try:
-            data = request.data
-            subject_grade_obj, error = self.get_object(pk)
-            if error:
-                return error
-
-            subject_grade_obj.is_active = data.get('is_active')
-            subject_grade_obj.save()
-            logger.info('Alterando status do subject_grade para {}.'.format(
-                data.get('is_active')))
-
-            message = 'SubjectGrade atualizado com sucesso.'
-            return ResponseHelper.HTTP_200({'results': message})
-
-        except Exception as error:
-
-            message = 'Problemas ao alterar status do subject_grade'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})

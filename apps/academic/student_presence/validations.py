@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
+from datetime import datetime, date
 from datetime import date
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
@@ -33,7 +34,6 @@ def validate_term_date(school_year_date):
     return True if school_year_date.get('init_date') <= date.today() <= \
         school_year_date.get('final_date') else False
 
-from datetime import datetime, date
 
 def validate_chosen_date(chosen_date: str):
     """
@@ -56,4 +56,13 @@ def validate_chosen_date(chosen_date: str):
 
     except ValueError:
         message = 'Formato de data inválido. O formato esperado é "YYYY-MM-DD".'
+        return ResponseHelper.HTTP_400({'detail': message})
+
+
+def validate_presence_percentage(presence: dict):
+
+    if presence.get('presence') and \
+            presence.get('presence') < 0 or \
+            presence.get('presence') > 100:
+        message = 'Porcentagem de presença deve ser maior ou igual que 0 e menor ou igual a 100.'
         return ResponseHelper.HTTP_400({'detail': message})
