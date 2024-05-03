@@ -18,6 +18,7 @@ from apps.academic.class_setting import view as class_setting_view
 from apps.academic.pedagogical_setting import view as pedagogical_view
 from apps.academic.subject_grade import views as subject_grade_view
 from apps.academic.skill_grade import views as skill_grade_view
+from apps.academic.student_presence import views as student_presence_view
 
 
 
@@ -86,8 +87,14 @@ urlpatterns = [
     path('subjectgrade/<int:class_id>/<int:pedagogical_id>/update/', subject_grade_view.UpdateSubjectGradeView.as_view(), name='subject_grade_update'),
 
     # ------------- Subject Grade / Notas de Discilpinas -------------
-    path('skillgrade/<int:class_id>/<int:pedagogical_id>/<int:skill_id>/', skill_grade_view.SkillGradeView.as_view(), name='skill_grade'),
+    path('studentpresence/<int:class_id>/<int:pedagogical_id>/<int:skill_id>/', skill_grade_view.SkillGradeView.as_view(), name='skill_grade'),
     path('skillgrade/<int:class_id>/<int:pedagogical_id>/<int:skill_id>/update/', skill_grade_view.UpdateSkillGradeView.as_view(), name='skill_grade_update'),
+
+   # ------------- Subject Grade / Notas de Discilpinas -------------
+    path('studentpresence/<int:class_id>/<int:pedagogical_id>/', student_presence_view.StudentPresenceView.as_view(), name='student_presence'),
+    path('studentpresence/<int:class_id>/<int:pedagogical_id>/update/', student_presence_view.UpdateStudentPresenceView.as_view(), name='student_presence_update'),
+
 ]
 
+student_presence_view
 urlpatterns = format_suffix_patterns(urlpatterns)

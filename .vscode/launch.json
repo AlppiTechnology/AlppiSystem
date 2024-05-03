@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "MS3",
+            "name": "System",
             "type": "debugpy",
             "request": "launch",
             "program": "H:/Usuários/Codes/Alppi/AlppiSystem/manage.py",
