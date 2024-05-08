@@ -136,7 +136,6 @@ class ClassSetting(models.Model):
         SchoolYear, db_column='fk_school_year', on_delete=models.DO_NOTHING)
     name = models.CharField(null=False, max_length=25)
     edited = models.DateTimeField(editable=True)
-    skill = models.IntegerField(null=False)
     status = models.IntegerField(null=False)
 
     def __str__(self):

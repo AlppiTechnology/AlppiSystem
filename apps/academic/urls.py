@@ -70,6 +70,10 @@ urlpatterns = [
 
     # ------------- Term Type / Tipo de Etapas -------------
     path('termtype/list/', term_type_view.ListTermTypeView.as_view(), name='list_all_term_type'),
+    path('termtype/<int:pk>/', term_type_view.TermTypeView.as_view(), name='get_term_type'),
+    path('termtype/create/', term_type_view.CreateTermTypeView.as_view(), name='create_term_type'),
+    path('termtype/<int:pk>/update/', term_type_view.UpdateTermTypeView.as_view(), name='update_term_type'),
+    path('termtype/<int:pk>/delete/', term_type_view.DeleteTermTypeView.as_view(), name='delete_term_type'),
 
     # ------------- Skill Settings / Configuracoes de Habilidades  -------------
     path('schoolyear/<int:pk>/', school_year_view.SchoolYearView.as_view(), name='school_year'),

@@ -21,7 +21,7 @@ logger = logging.getLogger('django')
 ALPPIDEVEL = os.getenv('ALPPIDEVEL')
 
 @method_decorator(permission_required(SUPERUSER), name='dispatch')
-class Troca1View(APIView):
+class Troca1View(APIView, BaseTroca1):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
@@ -42,7 +42,7 @@ class Troca1View(APIView):
 
 
 @method_decorator(permission_required(SUPERUSER), name='dispatch')
-class UpdateTroca1View(APIView):
+class UpdateTroca1View(APIView, BaseTroca1):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
@@ -63,26 +63,6 @@ class UpdateTroca1View(APIView):
 
         except Exception as error:
             message = 'Problemas ao editar Troca1'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
-
-
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class DeleteTroca1View(APIView):
-    authentication_classes  = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-
-    def delete(self, request, pk, format=None) -> ResponseHelper:
-        try:
-            troca2_obj, error = self.get_object(pk)
-            if error:
-                return error
-            
-            troca2_obj.delete()
-            return  ResponseHelper.HTTP_204()
-
-        except Exception as error:
-            message = 'Problemas ao deletar Troca1'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
@@ -130,7 +110,27 @@ class CreateTroca1View(APIView):
 
 
 @method_decorator(permission_required(SUPERUSER), name='dispatch')
-class ChangeStatusTroca1View(APIView):
+class DeleteTroca1View(APIView, BaseTroca1):
+    authentication_classes  = [JwtAutenticationAlppi]
+    permission_classes = [IsViewAllowed, HasPermission]
+
+    def delete(self, request, pk, format=None) -> ResponseHelper:
+        try:
+            troca2_obj, error = self.get_object(pk)
+            if error:
+                return error
+            
+            troca2_obj.delete()
+            return  ResponseHelper.HTTP_204()
+
+        except Exception as error:
+            message = 'Problemas ao deletar Troca1'
+            logger.error({'results': message, 'error:': str(error)})
+            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
+
+
+@method_decorator(permission_required(SUPERUSER), name='dispatch')
+class ChangeStatusTroca1View(APIView, BaseTroca1):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
     

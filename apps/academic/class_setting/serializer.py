@@ -24,6 +24,5 @@ class ClassSettingSerializer(serializers.ModelSerializer):
             'school_year_name',
             'name',
             'edited',
-            'skill',
             'status',
         ]
