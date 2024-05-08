@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.vscode/
 
 # id_rsa
 # id_rsa.pub

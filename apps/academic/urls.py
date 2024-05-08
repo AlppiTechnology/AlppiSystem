@@ -50,9 +50,17 @@ urlpatterns = [
 
     # ------------- School Level / Serie -------------
     path('schoollevel/list/', school_level_view.ListSchoolLevelView.as_view(), name='list_all_school_level'),
+    path('schoollevel/<int:pk>/', school_level_view.SchoolLevelView.as_view(), name='get_school_level'),
+    path('schoollevel/create/', school_level_view.CreateSchoolLevelView.as_view(), name='create_school_level'),
+    path('schoollevel/<int:pk>/update/', school_level_view.UpdateSchoolLevelView.as_view(), name='update_school_level'),
+    path('schoollevel/<int:pk>/delete/', school_level_view.DeleteSchoolLevelView.as_view(), name='delete_school_level'),
 
     # ------------- School Grade / Grau -------------
     path('schoolgrade/list/', school_grade_view.ListSchoolGradeView.as_view(), name='list_all_school_grade'),
+    path('schoolgrade/<int:pk>/', school_grade_view.SchoolGradeView.as_view(), name='get_school_grade'),
+    path('schoolgrade/create/', school_grade_view.CreateSchoolGradeView.as_view(), name='create_school_grade'),
+    path('schoolgrade/<int:pk>/update/', school_grade_view.UpdateSchoolGradeView.as_view(), name='update_school_grade'),
+    path('schoolgrade/<int:pk>/delete/', school_grade_view.DeleteSchoolGradeView.as_view(), name='delete_school_grade'),
 
     # ------------- Shift / Turno -------------
     path('shift/list/', shift_view.ListShiftView.as_view(), name='list_all_shift'),
@@ -87,7 +95,7 @@ urlpatterns = [
     path('subjectgrade/<int:class_id>/<int:pedagogical_id>/update/', subject_grade_view.UpdateSubjectGradeView.as_view(), name='subject_grade_update'),
 
     # ------------- Subject Grade / Notas de Discilpinas -------------
-    path('studentpresence/<int:class_id>/<int:pedagogical_id>/<int:skill_id>/', skill_grade_view.SkillGradeView.as_view(), name='skill_grade'),
+    path('skillgrade/<int:class_id>/<int:pedagogical_id>/<int:skill_id>/', skill_grade_view.SkillGradeView.as_view(), name='skill_grade'),
     path('skillgrade/<int:class_id>/<int:pedagogical_id>/<int:skill_id>/update/', skill_grade_view.UpdateSkillGradeView.as_view(), name='skill_grade_update'),
 
    # ------------- Subject Grade / Notas de Discilpinas -------------
