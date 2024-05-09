@@ -3,6 +3,7 @@
 import logging
 
 from django.db.models import Q, F
+from datetime import date
 
 from alppi.responses import ResponseHelper
 from apps.academic.models import SchoolYearDate
@@ -191,6 +192,43 @@ class BaseSchoolYearDate():
                 fk_term=term
             ).values('pk_school_year_date', 'grade', 'init_date', 
                      'final_date', 'term_name',
+                     'total_grade', 'average_grade', 'skill'
+            ).order_by('term_name').first()
+
+            if school_year_date_data:
+                return school_year_date_data, None
+
+            message = 'Esse termo não pertece ao ano letivo'
+            return None, ResponseHelper.HTTP_400({'detail': message})
+
+        except Exception as error:
+            message = 'Problemas ao cadastrar SchoolYearDate'
+            logger.error({'results': message, 'error:': str(error)})
+            return None, ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
+        
+
+    def get_school_year_date_by_date(self, fk_school_year: int, date: date):
+        """Captura os dados do Schoo Year Date de a cordo com a data enviada por parametro
+
+        Args:
+            fk_school_year (int): ID do ano letivo
+            date (str): data escolida para identificar qual termo é referente
+
+        Returns:
+            _type_: _description_
+        """
+        try:
+            school_year_date_data = SchoolYearDate.objects.annotate(
+                term_name=F('fk_term__name'),
+                skill=F('fk_school_year__skill'),
+                total_grade=F('fk_school_year__total_grade'),
+                average_grade=F('fk_school_year__average_grade')
+            ).filter(
+                fk_school_year=fk_school_year,
+                init_date__lte=date,
+                final_date__gte=date
+            ).values('pk_school_year_date', 'grade', 'init_date', 
+                     'final_date', 'term_name','fk_term',
                      'total_grade', 'average_grade', 'skill'
             ).order_by('term_name').first()
 

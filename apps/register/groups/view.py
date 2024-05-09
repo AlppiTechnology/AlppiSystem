@@ -36,6 +36,9 @@ class GroupsView(APIView):
             # groups_name = {group.id: group.name for group in groups}
             groups_name = [group.name.title() for group in groups]
 
+            # retira o nivel estudante das permições
+            groups_name.remove('Estudante')
+
             return Response({'groups': groups_name}, status=status.HTTP_200_OK)
 
         except Exception as error:

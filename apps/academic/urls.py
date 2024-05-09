@@ -18,6 +18,7 @@ from apps.academic.class_setting import view as class_setting_view
 from apps.academic.pedagogical_setting import view as pedagogical_view
 from apps.academic.subject_grade import views as subject_grade_view
 from apps.academic.skill_grade import views as skill_grade_view
+from apps.academic.student_presence import views as student_presence_view
 
 
 
@@ -49,18 +50,34 @@ urlpatterns = [
 
     # ------------- School Level / Serie -------------
     path('schoollevel/list/', school_level_view.ListSchoolLevelView.as_view(), name='list_all_school_level'),
+    path('schoollevel/<int:pk>/', school_level_view.SchoolLevelView.as_view(), name='get_school_level'),
+    path('schoollevel/create/', school_level_view.CreateSchoolLevelView.as_view(), name='create_school_level'),
+    path('schoollevel/<int:pk>/update/', school_level_view.UpdateSchoolLevelView.as_view(), name='update_school_level'),
+    path('schoollevel/<int:pk>/delete/', school_level_view.DeleteSchoolLevelView.as_view(), name='delete_school_level'),
 
     # ------------- School Grade / Grau -------------
     path('schoolgrade/list/', school_grade_view.ListSchoolGradeView.as_view(), name='list_all_school_grade'),
+    path('schoolgrade/<int:pk>/', school_grade_view.SchoolGradeView.as_view(), name='get_school_grade'),
+    path('schoolgrade/create/', school_grade_view.CreateSchoolGradeView.as_view(), name='create_school_grade'),
+    path('schoolgrade/<int:pk>/update/', school_grade_view.UpdateSchoolGradeView.as_view(), name='update_school_grade'),
+    path('schoolgrade/<int:pk>/delete/', school_grade_view.DeleteSchoolGradeView.as_view(), name='delete_school_grade'),
 
     # ------------- Shift / Turno -------------
     path('shift/list/', shift_view.ListShiftView.as_view(), name='list_all_shift'),
 
     # ------------- Term / Etapas -------------
     path('term/list/', term_view.ListTermView.as_view(), name='list_all_term'),
+    path('term/<int:pk>/', term_view.TermView.as_view(), name='get_term'),
+    path('term/create/', term_view.CreateTermView.as_view(), name='create_term'),
+    path('term/<int:pk>/update/', term_view.UpdateTermView.as_view(), name='update_term'),
+    path('term/<int:pk>/delete/', term_view.DeleteTermView.as_view(), name='delete_term'),
 
     # ------------- Term Type / Tipo de Etapas -------------
     path('termtype/list/', term_type_view.ListTermTypeView.as_view(), name='list_all_term_type'),
+    path('termtype/<int:pk>/', term_type_view.TermTypeView.as_view(), name='get_term_type'),
+    path('termtype/create/', term_type_view.CreateTermTypeView.as_view(), name='create_term_type'),
+    path('termtype/<int:pk>/update/', term_type_view.UpdateTermTypeView.as_view(), name='update_term_type'),
+    path('termtype/<int:pk>/delete/', term_type_view.DeleteTermTypeView.as_view(), name='delete_term_type'),
 
     # ------------- Skill Settings / Configuracoes de Habilidades  -------------
     path('schoolyear/<int:pk>/', school_year_view.SchoolYearView.as_view(), name='school_year'),
@@ -88,6 +105,12 @@ urlpatterns = [
     # ------------- Subject Grade / Notas de Discilpinas -------------
     path('skillgrade/<int:class_id>/<int:pedagogical_id>/<int:skill_id>/', skill_grade_view.SkillGradeView.as_view(), name='skill_grade'),
     path('skillgrade/<int:class_id>/<int:pedagogical_id>/<int:skill_id>/update/', skill_grade_view.UpdateSkillGradeView.as_view(), name='skill_grade_update'),
+
+   # ------------- Subject Grade / Notas de Discilpinas -------------
+    path('studentpresence/<int:class_id>/<int:pedagogical_id>/', student_presence_view.StudentPresenceView.as_view(), name='student_presence'),
+    path('studentpresence/<int:class_id>/<int:pedagogical_id>/update/', student_presence_view.UpdateStudentPresenceView.as_view(), name='student_presence_update'),
+
 ]
 
+student_presence_view
 urlpatterns = format_suffix_patterns(urlpatterns)

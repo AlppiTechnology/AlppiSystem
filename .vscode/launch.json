@@ -5,11 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "MS3",
+            "name": "System",
             "type": "debugpy",
             "request": "launch",
-            "program": "H:/Usuários/Codes/Alppi/Microservice_4/manage.py",
-            "args": ["runserver", "7004"],
+            "program": "H:/Usuários/Codes/Alppi/AlppiSystem/manage.py",
+            "args": ["runserver", "7002"],
             "console": "integratedTerminal",
             "justMyCode": true
         },

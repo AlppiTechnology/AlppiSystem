@@ -136,7 +136,6 @@ class ClassSetting(models.Model):
         SchoolYear, db_column='fk_school_year', on_delete=models.DO_NOTHING)
     name = models.CharField(null=False, max_length=25)
     edited = models.DateTimeField(editable=True)
-    skill = models.IntegerField(null=False)
     status = models.IntegerField(null=False)
 
     def __str__(self):
@@ -295,8 +294,8 @@ class SkillGrade(models.Model):
         db_table = "tb_skill_grade"
 
 
-class StudentAbcense(models.Model):
-    pk_student_abcense = models.AutoField(primary_key=True, unique=True)
+class StudentPresence(models.Model):
+    pk_student_presence = models.AutoField(primary_key=True, unique=True)
     fk_class = models.ForeignKey(
         ClassSetting, db_column='fk_class', on_delete=models.DO_NOTHING)
     fk_term = models.ForeignKey(
@@ -305,12 +304,13 @@ class StudentAbcense(models.Model):
         Subject, db_column='fk_subject', on_delete=models.DO_NOTHING)
     fk_student_user = models.ForeignKey(
         User, db_column='fk_student_user', on_delete=models.DO_NOTHING)
-    abcense = models.IntegerField(null=False, default=100)
-    edited = models.DateTimeField(editable=True)
-    status = models.IntegerField(null=False)
+    presence = models.IntegerField(default=100)
+    date_presence = models.DateField(editable=True)
 
     def __str__(self):
-        return self.fk_student_user.username
+        return self.fk_student_user.username + ' - ' + \
+            str(self.presence) + '% - ' + str(self.date_presence) \
+            + ' - ' + self.fk_subject.subject_name
 
     class Meta:
-        db_table = "tb_student_abcense"
+        db_table = "tb_student_presence"

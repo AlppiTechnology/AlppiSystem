@@ -15,13 +15,13 @@ from alppi.responses import ResponseHelper
 from alppi.utils.decorators import permission_required
 from alppi.utils.groups import TEACHER
 from apps.academic.class_setting.class_setting import BaseClassSetting
-from apps.academic.models import SkillGrade
+from apps.academic.models import StudentPresence
 from apps.academic.pedagogical_setting.pedagogical_setting import BasePedagogicalSetting
 from apps.academic.school_year_date.school_year_date import BaseSchoolYearDate
 from apps.academic.student_class.student_class import BaseStudentClass
-from apps.academic.skill_grade.serializer import SkillGradeSerializer
-from apps.academic.skill_grade.skill_grade import BaseSkillGrade
-from apps.academic.skill_grade.validations import valeidate_sum_grades, validate_employee_visualisation, validate_term_date
+from apps.academic.student_presence.serializer import StudentPresenceSerializer
+from apps.academic.student_presence.student_presence import BaseStudentPresence
+from apps.academic.student_presence.validations import validate_chosen_date, validate_employee_visualisation, validate_presence_percentage, validate_term_date
 from common.pagination.pagination import CustomPagination
 
 
@@ -31,19 +31,24 @@ ALPPIDEVEL = os.getenv('ALPPIDEVEL')
 
 
 @method_decorator(permission_required(TEACHER), name='dispatch')
-class SkillGradeView(APIView):
+class StudentPresenceView(APIView):
     authentication_classes = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
-    def get(self, request, class_id, pedagogical_id, skill_id, format=None) -> ResponseHelper:
+    def get(self, request, class_id, pedagogical_id, format=None) -> ResponseHelper:
 
         try:
-            term = int(request.GET.get("term", '1'))
+            chosen_date =  request.GET.get("date", None)
+
+            error = validate_chosen_date(chosen_date)
+            if error:
+                return error
+
             BCS = BaseClassSetting()
             BPS = BasePedagogicalSetting()
             BSC = BaseStudentClass()
             BSYD = BaseSchoolYearDate()
-            BSG = BaseSkillGrade()
+            BSA = BaseStudentPresence()
 
             jwt_token = request.jwt_token
             user = request.user
@@ -57,28 +62,21 @@ class SkillGradeView(APIView):
             if not pedagogical_setting_obj:
                 return pedagogical_setting_data
 
-            # verifica se o usuario é o professor da turma para poder vlsualizar as notas da turma
+            # verifica se o usuario é o professor da turma para poder vlsualizar as presencas da turma
             if jwt_token.get('group') not in ('superuser', 'administrador'):
                 employee_visualisation_error = validate_employee_visualisation(
                     pedagogical_setting_data, user.pk_user)
                 if employee_visualisation_error:
                     return employee_visualisation_error
 
-            school_year_date_info, error = BSYD.get_school_year_date_info(
-                class_setting_obj.fk_school_year, term)
+            # dados do termo de acordo com data escolhida
+            school_year_date_info, error = BSYD.get_school_year_date_by_date(
+                class_setting_obj.fk_school_year, chosen_date)
             if error:
                 return error
 
-            # Verifia se a data atual e menor que o inicio do periodo letivo selecionado.
-            # Caso não esteja, não retornara nenhuma nota dos alunos
-
-            if school_year_date_info.get('init_date') > date.today():
-                return ResponseHelper.HTTP_200({'results': {
-                    'editable': False,
-                    'term_grade': school_year_date_info.get('grade'),
-                    'skill': school_year_date_info.get('skill'),
-                    'skill_grades': [],
-                }})
+            # termo de acordo com a data escolhida
+            term = school_year_date_info.get('fk_term')
 
             students_class, error = BSC.list_student_class(class_id)
             if error:
@@ -88,57 +86,60 @@ class SkillGradeView(APIView):
                         for student in students_class]
 
             # verifica se a data atual corresponde ao termo escolhido
-            # Caso não seja do termo, pode apenas visualizar as notas enteriores, mas não editar
+            # Caso não seja do termo, pode apenas visualizar as presencas enteriores, mas não editar
             editable = is_current_term = validate_term_date(school_year_date_info)
 
-            skill_grades = []
-            skill_grades = BSG.get_students_skill_grade(
-                pedagogical_setting_data.get('fk_subject'), skill_id, class_id, term)
+            presence = []
+            presence = BSA.get_students_presence(
+                pedagogical_setting_data.get('fk_subject'), class_id, term, chosen_date)
 
-            _ = [user_ids.remove(grade_item.get('fk_student_user')) for
-                 grade_item in skill_grades if grade_item.get('fk_student_user') in user_ids]
+            # remove os alunos que não são da turma escolhida
+            _ = [user_ids.remove(presence_item.get('fk_student_user')) for
+                 presence_item in presence if presence_item.get('fk_student_user') in user_ids]
 
             # if is_current_term:
             for studet in user_ids:
                 if is_current_term:
-                    student_skill_grade = BSG.build_student_skill_grade_data(
+                    student_presence = BSA.build_student_presence_data(
                         user_id=studet,
                         class_id=class_id,
                         term_id=term,
                         subject_id=pedagogical_setting_data.get('fk_subject'),
-                        skill_id=skill_id)
+                        chosen_date=chosen_date)
 
-                    student_skill_grade_created, create_error = BSG.create_student_skill_grade(
-                        student_skill_grade)
+                    student_presence_created, create_error = BSA.create_student_presence(
+                        student_presence)
                     if create_error:
                         return create_error
 
-                    skill_grades.append(student_skill_grade_created)
+                    presence.append(student_presence_created)
 
             logger.info('Retornando nota dos alunos.')
             return ResponseHelper.HTTP_200({
                 'editable': editable,
-                'term_grade': school_year_date_info.get('grade'),
-                'skill': class_setting_obj.skill,
-                'skill_grades': skill_grades
+                'presences': presence
             })
 
         except Exception as error:
-            message = 'Problemas ao visualizar SkillGrade'
+            message = 'Problemas ao visualizar StudentPresence'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
 @method_decorator(permission_required(TEACHER), name='dispatch')
-class UpdateSkillGradeView(APIView):
+class UpdateStudentPresenceView(APIView):
     authentication_classes = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
-    def put(self, request, class_id, pedagogical_id, skill_id, format=None) -> ResponseHelper:
+    def put(self, request, class_id, pedagogical_id, format=None) -> ResponseHelper:
         try:
             data = request.data
-            term = int(request.GET.get("term", '1'))
-            skill_grades = data.get("skill_grades", [])
+            chosen_date =  request.GET.get("date", None)
+            presences = data.get("presences", [])
+
+            error = validate_chosen_date(chosen_date)
+            if error:
+                return error
 
             jwt_token = request.jwt_token
             user = request.user
@@ -147,7 +148,7 @@ class UpdateSkillGradeView(APIView):
             BPS = BasePedagogicalSetting()
             BSC = BaseStudentClass()
             BSYD = BaseSchoolYearDate()
-            BSG = BaseSkillGrade()
+            BSA = BaseStudentPresence()
 
             class_setting_obj, error = BCS.get_object(class_id)
             if error:
@@ -158,20 +159,22 @@ class UpdateSkillGradeView(APIView):
             if not pedagogical_setting_obj:
                 return pedagogical_setting_data
 
-            # verifica se o usuario é o professor da turma para poder vlsualizar as notas da turma
+
+            # verifica se o usuario é o professor da turma para poder vlsualizar as presencas da turma
             if jwt_token.get('group') not in ('superuser', 'administrador'):
                 employee_visualisation_error = validate_employee_visualisation(
                     pedagogical_setting_data, user.pk_user)
                 if employee_visualisation_error:
                     return employee_visualisation_error
 
-            school_year_date_info, error = BSYD.get_school_year_date_info(
-                class_setting_obj.fk_school_year, term)
+            # dados do termo de acordo com data escolhida
+            school_year_date_info, error = BSYD.get_school_year_date_by_date(
+                class_setting_obj.fk_school_year, chosen_date)
             if error:
                 return error
-
-            # Nota maxima do termo da turma
-            term_grade = school_year_date_info.get('grade')
+            
+            # termo de acordo com a data escolhida
+            term = school_year_date_info.get('fk_term')
 
             students_class, error = BSC.list_student_class(class_id)
             if error:
@@ -181,39 +184,34 @@ class UpdateSkillGradeView(APIView):
                         for student in students_class]
 
             # verifica se a data atual corresponde ao termo escolhido
-            # Caso não seja do termo, pode apenas visualizar as notas enteriores, mas não editar
+            # Caso não seja do termo, pode apenas visualizar as presencas enteriores, mas não editar
             editable = is_current_term = validate_term_date(school_year_date_info)
 
-            _ = [skill_grades.remove(student_grade) for student_grade in deepcopy(skill_grades)
+            # remove os alunos que não são da turma escolhida
+            _ = [presences.remove(student_grade) for student_grade in deepcopy(presences)
                  if student_grade.get("fk_student_user") not in user_ids]
+            
 
-            if editable and is_current_term and skill_grades:
-                for skill_grade in skill_grades:
-                    error = valeidate_sum_grades(skill_grade, term_grade)
+            if editable and is_current_term and presences:
+                for presence in presences:
+                    error = validate_presence_percentage(presence)
                     if error:
                         return error
 
-                    SkillGrade.objects.filter(
-                        pk_skill_grade=skill_grade.get("pk_skill_grade"),
+                    StudentPresence.objects.filter(
+                        pk_student_presence=presence.get("pk_student_presence"),
                         fk_class = class_id,
                         fk_term = term,
                         fk_subject = pedagogical_setting_data.get('fk_subject'),
-                        fk_skill=skill_id,
-                        fk_student_user = skill_grade.get('fk_student_user')
+                        fk_student_user = presence.get('fk_student_user')
                     ).update(
-                        edited=datetime.now(),
-                        grade_1=skill_grade.get('grade_1'),
-                        grade_2=skill_grade.get('grade_2'),
-                        grade_3=skill_grade.get('grade_3'),
-                        grade_4=skill_grade.get('grade_4'),
-                        grade_5=skill_grade.get('grade_5'),
+                        presence=presence.get("presence")
                     )
-                return ResponseHelper.HTTP_200({'results': 'Notas editadas com sucesso'})
+                return ResponseHelper.HTTP_200({'results': 'Presencas editadas com sucesso'})
             else:
-                return ResponseHelper.HTTP_400({"detail": "Não é possivel editar as notas nesse momento."})
+                return ResponseHelper.HTTP_400({"detail": "Não é possivel editar as presencas nesse momento."})
 
         except Exception as error:
-            message = 'Problemas ao editar SkillGrade'
+            message = 'Problemas ao editar StudentPresence'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
-

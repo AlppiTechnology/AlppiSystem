@@ -17,6 +17,9 @@ def validate_terms(dates, term_type) -> bool:
     for date in dates:
         if date.get('fk_term') not in term_type_allowed:
             return ResponseHelper.HTTP_400({'detail':'Etapa não corresponsdente ao Tipo de Etapa'})
+        
+    if len(dates) != len(term_type_allowed):
+        return ResponseHelper.HTTP_400({'detail':f'É nescessário ter data para {len(term_type_allowed)} termos.'})
 
 
 def validate_dates(dates) -> bool:

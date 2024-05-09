@@ -13,7 +13,7 @@ from alppi.auth.authentication import JwtAutenticationAlppi
 from alppi.auth.permissions import HasPermission, IsViewAllowed
 from alppi.responses import ResponseHelper
 from alppi.utils.decorators import permission_required
-from alppi.utils.groups import SUPERUSER
+from alppi.utils.groups import TEACHER
 from apps.academic.class_setting.class_setting import BaseClassSetting
 from apps.academic.models import SubjectGrade
 from apps.academic.pedagogical_setting.pedagogical_setting import BasePedagogicalSetting
@@ -30,7 +30,7 @@ logger = logging.getLogger('django')
 ALPPIDEVEL = os.getenv('ALPPIDEVEL')
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(TEACHER), name='dispatch')
 class SubjectGradeView(APIView):
     authentication_classes = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -69,9 +69,8 @@ class SubjectGradeView(APIView):
             if error:
                 return error
 
-            # Verifia se a data atual e menor que o inicio do periodo letivo selecionado.
+            # Verifica se a data atual e menor que o inicio do periodo letivo selecionado.
             # Caso não esteja, não retornara nenhuma nota dos alunos
-
             if school_year_date_info.get('init_date') > date.today():
                 return ResponseHelper.HTTP_200({'results': {
                     'editable': False,
@@ -80,9 +79,6 @@ class SubjectGradeView(APIView):
                     'grades': [],
                 }})
 
-            # Verifica se poderá ser editadas as notas
-            editable = False if date.today() > \
-                school_year_date_info.get('final_date') else True
 
             students_class, error = BSC.list_student_class(class_id)
             if error:
@@ -91,7 +87,9 @@ class SubjectGradeView(APIView):
             user_ids = [student.get('fk_student_user')
                         for student in students_class]
 
-            is_current_term = validate_term_date(school_year_date_info)
+            # verifica se a data atual corresponde ao termo escolhido
+            # Caso não seja do termo, pode apenas visualizar as notas enteriores, mas não editar
+            editable = is_current_term = validate_term_date(school_year_date_info)
 
             grades = []
             grades = BSG.get_students_grade(
@@ -130,7 +128,7 @@ class SubjectGradeView(APIView):
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(TEACHER), name='dispatch')
 class UpdateSubjectGradeView(APIView):
     authentication_classes = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -138,7 +136,7 @@ class UpdateSubjectGradeView(APIView):
     def put(self, request, class_id, pedagogical_id, format=None) -> ResponseHelper:
         try:
             data = request.data
-            term = data.get("term", "1")
+            term = int(request.GET.get("term", '1'))
             grades = data.get("grades", [])
 
             jwt_token = request.jwt_token
@@ -148,7 +146,6 @@ class UpdateSubjectGradeView(APIView):
             BPS = BasePedagogicalSetting()
             BSC = BaseStudentClass()
             BSYD = BaseSchoolYearDate()
-            BSG = BaseSubjectGrade()
 
             class_setting_obj, error = BCS.get_object(class_id)
             if error:
@@ -174,18 +171,16 @@ class UpdateSubjectGradeView(APIView):
             # Nota maxima do termo da turma
             term_grade = school_year_date_info.get('grade')
 
-            # Verifica se poderá ser editadas as notas
-            editable = False if date.today() > \
-                school_year_date_info.get('final_date') else True
-
             students_class, error = BSC.list_student_class(class_id)
             if error:
                 return error
             # ids dos usuarios da turma
             user_ids = [student.get('fk_student_user')
                         for student in students_class]
-
-            is_current_term = validate_term_date(school_year_date_info)
+            
+            # verifica se a data atual corresponde ao termo escolhido
+            # Caso não seja do termo, pode apenas visualizar as notas enteriores, mas não editar
+            editable = is_current_term = validate_term_date(school_year_date_info)
 
             _ = [grades.remove(student_grade) for student_grade in deepcopy(grades)
                  if student_grade.get("fk_student_user") not in user_ids]
@@ -197,7 +192,11 @@ class UpdateSubjectGradeView(APIView):
                         return error
 
                     SubjectGrade.objects.filter(
-                        pk_subject_grade=grade.get("pk_subject_grade")
+                        pk_subject_grade=grade.get("pk_subject_grade"),
+                        fk_class = class_id,
+                        fk_term = term,
+                        fk_subject = pedagogical_setting_data.get('fk_subject'),
+                        fk_student_user = grade.get('fk_student_user')
                     ).update(
                         edited=datetime.now(),
                         grade_1=grade.get('grade_1'),
@@ -215,92 +214,3 @@ class UpdateSubjectGradeView(APIView):
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
-
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class DeleteSubjectGradeView(APIView):
-    authentication_classes = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-
-    def delete(self, request, pk, format=None) -> ResponseHelper:
-        try:
-            subject_grade_obj, error = self.get_object(pk)
-            if error:
-                return error
-
-            subject_grade_obj.delete()
-            return ResponseHelper.HTTP_204()
-
-        except Exception as error:
-            message = 'Problemas ao deletar SubjectGrade'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
-
-
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class ListSubjectGradeView(APIView, CustomPagination):
-    authentication_classes = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-
-    def get(self, request, format=None) -> ResponseHelper:
-        try:
-            subject_grades = SubjectGrade.objects.all()
-            subject_grade_paginate = self.paginate_queryset(
-                subject_grades, request, view=self)
-
-            serializer = SubjectGradeSerializer(
-                subject_grade_paginate, many=True)
-            return ResponseHelper.HTTP_200(self.get_paginated_response(serializer.data).data)
-
-        except Exception as error:
-            message = 'Problemas ao listar todos os SubjectGrade.'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
-
-
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class CreateSubjectGradeView(APIView):
-    authentication_classes = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-
-    def post(self, request, format=None) -> ResponseHelper:
-        try:
-            data = request.data
-
-            serializer = SubjectGradeSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return ResponseHelper.HTTP_201({'results': serializer.data})
-
-            return ResponseHelper.HTTP_400({'detail': serializer.errors})
-
-        except Exception as error:
-            message = 'Problemas ao cadastrar SubjectGrade'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
-
-
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class ChangeStatusSubjectGradeView(APIView):
-    authentication_classes = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-
-    def put(self, request, pk, format=None) -> ResponseHelper:
-        try:
-            data = request.data
-            subject_grade_obj, error = self.get_object(pk)
-            if error:
-                return error
-
-            subject_grade_obj.is_active = data.get('is_active')
-            subject_grade_obj.save()
-            logger.info('Alterando status do subject_grade para {}.'.format(
-                data.get('is_active')))
-
-            message = 'SubjectGrade atualizado com sucesso.'
-            return ResponseHelper.HTTP_200({'results': message})
-
-        except Exception as error:
-
-            message = 'Problemas ao alterar status do subject_grade'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
