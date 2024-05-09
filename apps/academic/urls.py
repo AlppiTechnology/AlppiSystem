@@ -67,6 +67,10 @@ urlpatterns = [
 
     # ------------- Term / Etapas -------------
     path('term/list/', term_view.ListTermView.as_view(), name='list_all_term'),
+    path('term/<int:pk>/', term_view.TermView.as_view(), name='get_term'),
+    path('term/create/', term_view.CreateTermView.as_view(), name='create_term'),
+    path('term/<int:pk>/update/', term_view.UpdateTermView.as_view(), name='update_term'),
+    path('term/<int:pk>/delete/', term_view.DeleteTermView.as_view(), name='delete_term'),
 
     # ------------- Term Type / Tipo de Etapas -------------
     path('termtype/list/', term_type_view.ListTermTypeView.as_view(), name='list_all_term_type'),
