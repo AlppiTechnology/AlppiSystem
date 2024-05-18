@@ -52,6 +52,7 @@ CUSTOM_APPS = [
     'apps.graphics',
     'apps.home',
     'apps.register',
+    'apps.ct_requests'
 ]
 
 INSTALLED_APPS = [
