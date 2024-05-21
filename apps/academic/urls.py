@@ -112,5 +112,4 @@ urlpatterns = [
 
 ]
 
-student_presence_view
 urlpatterns = format_suffix_patterns(urlpatterns)

@@ -12,9 +12,10 @@ from alppi.auth.authentication import JwtAutenticationAlppi
 from alppi.auth.permissions import HasPermission, IsViewAllowed
 from alppi.responses import ResponseHelper
 from alppi.utils.decorators import permission_required
-from alppi.utils.groups import SUPERUSER
+from alppi.utils.groups import SUPERUSER, ADMINISTRATOR
 from apps.ct_requests.drct_section.drct_section import BaseDRCTSection
 from apps.ct_requests.drct_section.serializer import DRCTSectionSerializer
+from apps.ct_requests.models import DRCTSection
 from common.pagination.pagination import CustomPagination
 
 
@@ -22,7 +23,7 @@ logger = logging.getLogger('django')
 
 ALPPIDEVEL = os.getenv('ALPPIDEVEL')
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class DRCTSectionView(APIView, BaseDRCTSection):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -43,7 +44,7 @@ class DRCTSectionView(APIView, BaseDRCTSection):
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class UpdateDRCTSectionView(APIView, BaseDRCTSection):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -68,7 +69,7 @@ class UpdateDRCTSectionView(APIView, BaseDRCTSection):
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class ListDRCTSectionView(APIView, CustomPagination):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -89,7 +90,7 @@ class ListDRCTSectionView(APIView, CustomPagination):
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class CreateDRCTSectionView(APIView):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -131,27 +132,3 @@ class DeleteDRCTSectionView(APIView, BaseDRCTSection):
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class ChangeStatusDRCTSectionView(APIView, BaseDRCTSection):
-    authentication_classes  = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-    
-    def put(self, request, pk, format=None) -> ResponseHelper:
-        try:
-            data = request.data
-            drct_section_obj, error = self.get_object(pk)
-            if error:
-                return error
-
-            drct_section_obj.is_active = data.get('is_active')
-            drct_section_obj.save()
-            logger.info('Alterando status do request para {}.'.format(data.get('is_active')))
-
-            message = 'DRCTSection atualizado com sucesso.'
-            return  ResponseHelper.HTTP_200({'results': message})
-
-        except Exception as error:
-
-            message = 'Problemas ao alterar status do request'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})

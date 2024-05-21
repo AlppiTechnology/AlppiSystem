@@ -11,19 +11,6 @@ import logging
 logger = logging.getLogger('django')
 
 
-def uppercase_first(data: dict, items: list) -> dict:
-    '''Coloca a primeira letra das palavras de uma frase em MAIUSCOLA.\n
-
-    Parameters:
-        data : dict com as informações.\n
-        items : valores a serem modificados.
-    '''
-
-    for key, value in data.items():
-        if key in items:
-            data[key] = value.title()
-
-
 def get_ip_from_request(request):
     if 'HTTP_X_FORWARDED_FOR' in request.META:
         return request.META['HTTP_X_FORWARDED_FOR']

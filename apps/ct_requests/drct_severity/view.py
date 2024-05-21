@@ -13,8 +13,8 @@ from alppi.auth.permissions import HasPermission, IsViewAllowed
 from alppi.responses import ResponseHelper
 from alppi.utils.decorators import permission_required
 from alppi.utils.groups import SUPERUSER
-from apps.ct_requests.drct_severiy.drct_severiy import BaseDRCTSeverity
-from apps.ct_requests.drct_severiy.serializer import DRCTSeveritySerializer
+from apps.ct_requests.drct_severity.drct_severity import BaseDRCTSeverity
+from apps.ct_requests.drct_severity.serializer import DRCTSeveritySerializer
 from common.pagination.pagination import CustomPagination
 
 

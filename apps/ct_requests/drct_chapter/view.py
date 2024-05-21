@@ -12,9 +12,10 @@ from alppi.auth.authentication import JwtAutenticationAlppi
 from alppi.auth.permissions import HasPermission, IsViewAllowed
 from alppi.responses import ResponseHelper
 from alppi.utils.decorators import permission_required
-from alppi.utils.groups import SUPERUSER
+from alppi.utils.groups import ADMINISTRATOR, SUPERUSER
 from apps.ct_requests.drct_chapter.drct_chapter import BaseDRCTChapter
 from apps.ct_requests.drct_chapter.serializer import DRCTChapterSerializer
+from apps.ct_requests.models import DRCTChapter
 from common.pagination.pagination import CustomPagination
 
 
@@ -22,7 +23,7 @@ logger = logging.getLogger('django')
 
 ALPPIDEVEL = os.getenv('ALPPIDEVEL')
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class DRCTChapterView(APIView, BaseDRCTChapter):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -43,7 +44,51 @@ class DRCTChapterView(APIView, BaseDRCTChapter):
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
+class ListDRCTChapterView(APIView, CustomPagination):
+    authentication_classes  = [JwtAutenticationAlppi]
+    permission_classes = [IsViewAllowed, HasPermission]
+
+    def get(self, request, format=None) -> ResponseHelper:
+        try:
+            requests = DRCTChapter.objects.all()
+            drct_chapte_paginate = self.paginate_queryset(
+                requests, request, view=self)
+
+            serializer = DRCTChapterSerializer(
+                drct_chapte_paginate, many=True)
+            return  ResponseHelper.HTTP_200(self.get_paginated_response(serializer.data).data)
+
+
+        except Exception as error:
+            message = 'Problemas ao listar todos os DRCTChapter.'
+            logger.error({'results': message, 'error:': str(error)})
+            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
+
+
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
+class CreateDRCTChapterView(APIView):
+    authentication_classes  = [JwtAutenticationAlppi]
+    permission_classes = [IsViewAllowed, HasPermission]
+
+    def post(self, request, format=None) -> ResponseHelper:
+        try:
+            data = request.data
+
+            serializer = DRCTChapterSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return  ResponseHelper.HTTP_201({'results': serializer.data})
+
+            return  ResponseHelper.HTTP_400({'detail': serializer.errors})
+
+        except Exception as error:
+            message = 'Problemas ao cadastrar DRCTChapter'
+            logger.error({'results': message, 'error:': str(error)})
+            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
+
+
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class UpdateDRCTChapterView(APIView, BaseDRCTChapter):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -68,48 +113,6 @@ class UpdateDRCTChapterView(APIView, BaseDRCTChapter):
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class ListDRCTChapterView(APIView, CustomPagination):
-    authentication_classes  = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-
-    def get(self, request, format=None) -> ResponseHelper:
-        try:
-            requests = DRCTChapter.objects.all()
-            drct_chapte_paginate = self.paginate_queryset(
-                requests, request, view=self)
-
-            serializer = DRCTChapterSerializer(
-                drct_chapte_paginate, many=True)
-            return  ResponseHelper.HTTP_200(self.get_paginated_response(serializer.data).data)
-
-
-        except Exception as error:
-            message = 'Problemas ao listar todos os DRCTChapter.'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
-
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class CreateDRCTChapterView(APIView):
-    authentication_classes  = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-
-    def post(self, request, format=None) -> ResponseHelper:
-        try:
-            data = request.data
-
-            serializer = DRCTChapterSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return  ResponseHelper.HTTP_201({'results': serializer.data})
-
-            return  ResponseHelper.HTTP_400({'detail': serializer.errors})
-
-        except Exception as error:
-            message = 'Problemas ao cadastrar DRCTChapter'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
-
 
 @method_decorator(permission_required(SUPERUSER), name='dispatch')
 class DeleteDRCTChapterView(APIView, BaseDRCTChapter):
@@ -127,31 +130,5 @@ class DeleteDRCTChapterView(APIView, BaseDRCTChapter):
 
         except Exception as error:
             message = 'Problemas ao deletar DRCTChapter'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
-
-
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class ChangeStatusDRCTChapterView(APIView, BaseDRCTChapter):
-    authentication_classes  = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-    
-    def put(self, request, pk, format=None) -> ResponseHelper:
-        try:
-            data = request.data
-            drct_chapte_obj, error = self.get_object(pk)
-            if error:
-                return error
-
-            drct_chapte_obj.is_active = data.get('is_active')
-            drct_chapte_obj.save()
-            logger.info('Alterando status do request para {}.'.format(data.get('is_active')))
-
-            message = 'DRCTChapter atualizado com sucesso.'
-            return  ResponseHelper.HTTP_200({'results': message})
-
-        except Exception as error:
-
-            message = 'Problemas ao alterar status do request'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})

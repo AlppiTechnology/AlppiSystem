@@ -4,7 +4,7 @@ import logging
 
 from alppi.responses import ResponseHelper
 from apps.ct_requests.models import DRCTSeverity
-from apps.ct_requests.drct_severiy.serializer import DRCTSeveritySerializer
+from apps.ct_requests.drct_severity.serializer import DRCTSeveritySerializer
 
 
 logger = logging.getLogger('django')
@@ -28,14 +28,14 @@ class BaseDRCTSeverity():
             logger.error({'results': message})
             return  (None, ResponseHelper.HTTP_404({'detail': message}))
 
-    def get_drct_severiy_data(self, pk) -> tuple:
+    def get_drct_severity_data(self, pk) -> tuple:
         """
-            Captura os id da drct_severiy e dados serializados de um drct_severiy especifica
+            Captura os id da drct_severity e dados serializados de um drct_severity especifica
         """
-        logger.info(f'Capturando dados do drct_severiy id:{pk}')
-        drct_severiy_id, has_error = self.get_object(pk=pk)
+        logger.info(f'Capturando dados do drct_severity id:{pk}')
+        drct_severity_id, has_error = self.get_object(pk=pk)
         if has_error:
             return None, has_error
 
-        selrializer = DRCTSeveritySerializer(drct_severiy_id)
-        return drct_severiy_id, selrializer.data
+        selrializer = DRCTSeveritySerializer(drct_severity_id)
+        return drct_severity_id, selrializer.data
