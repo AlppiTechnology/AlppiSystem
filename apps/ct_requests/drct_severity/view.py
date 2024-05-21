@@ -12,9 +12,10 @@ from alppi.auth.authentication import JwtAutenticationAlppi
 from alppi.auth.permissions import HasPermission, IsViewAllowed
 from alppi.responses import ResponseHelper
 from alppi.utils.decorators import permission_required
-from alppi.utils.groups import SUPERUSER
+from alppi.utils.groups import SUPERUSER, ADMINISTRATOR
 from apps.ct_requests.drct_severity.drct_severity import BaseDRCTSeverity
 from apps.ct_requests.drct_severity.serializer import DRCTSeveritySerializer
+from apps.ct_requests.models import DRCTSeverity
 from common.pagination.pagination import CustomPagination
 
 
@@ -22,7 +23,7 @@ logger = logging.getLogger('django')
 
 ALPPIDEVEL = os.getenv('ALPPIDEVEL')
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class DRCTSeverityView(APIView, BaseDRCTSeverity):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -43,7 +44,7 @@ class DRCTSeverityView(APIView, BaseDRCTSeverity):
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class UpdateDRCTSeverityView(APIView, BaseDRCTSeverity):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -68,7 +69,7 @@ class UpdateDRCTSeverityView(APIView, BaseDRCTSeverity):
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class ListDRCTSeverityView(APIView, CustomPagination):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -89,7 +90,7 @@ class ListDRCTSeverityView(APIView, CustomPagination):
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class CreateDRCTSeverityView(APIView):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -127,31 +128,5 @@ class DeleteDRCTSeverityView(APIView, BaseDRCTSeverity):
 
         except Exception as error:
             message = 'Problemas ao deletar DRCTSeverity'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
-
-
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class ChangeStatusDRCTSeverityView(APIView, BaseDRCTSeverity):
-    authentication_classes  = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-    
-    def put(self, request, pk, format=None) -> ResponseHelper:
-        try:
-            data = request.data
-            drct_severity_obj, error = self.get_object(pk)
-            if error:
-                return error
-
-            drct_severity_obj.is_active = data.get('is_active')
-            drct_severity_obj.save()
-            logger.info('Alterando status do request para {}.'.format(data.get('is_active')))
-
-            message = 'DRCTSeverity atualizado com sucesso.'
-            return  ResponseHelper.HTTP_200({'results': message})
-
-        except Exception as error:
-
-            message = 'Problemas ao alterar status do request'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})

@@ -37,6 +37,21 @@ urlpatterns = [
     path('paragraph/<int:pk>/update/', paragraph_view.UpdateDRCTParagraphView.as_view(), name='paragraph_update'),
     path('paragraph/<int:pk>/delete/', paragraph_view.DeleteDRCTParagraphView.as_view(), name='paragraph_delete'),
 
+    # ------------- Severity / Criticidade -------------
+    path('severity/list/', severity_view.ListDRCTSeverityView.as_view(), name='severity_list'),
+    path('severity/create/', severity_view.CreateDRCTSeverityView.as_view(), name='severity_create'),
+    path('severity/<int:pk>/', severity_view.DRCTSeverityView.as_view(), name='severity_data'),
+    path('severity/<int:pk>/update/', severity_view.UpdateDRCTSeverityView.as_view(), name='severity_update'),
+    path('severity/<int:pk>/delete/', severity_view.DeleteDRCTSeverityView.as_view(), name='severity_delete'),
+
+    # ------------- Penalty / Penalidade -------------
+    path('penalty/list/', penalty_view.ListDRCTPenaltyView.as_view(), name='penalty_list'),
+    path('penalty/create/', penalty_view.CreateDRCTPenaltyView.as_view(), name='penalty_create'),
+    path('penalty/<int:pk>/', penalty_view.DRCTPenaltyView.as_view(), name='penalty_data'),
+    path('penalty/<int:pk>/update/', penalty_view.UpdateDRCTPenaltyView.as_view(), name='penalty_update'),
+    path('penalty/<int:pk>/delete/', penalty_view.DeleteDRCTPenaltyView.as_view(), name='penalty_delete'),
+
+
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

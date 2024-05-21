@@ -12,9 +12,10 @@ from alppi.auth.authentication import JwtAutenticationAlppi
 from alppi.auth.permissions import HasPermission, IsViewAllowed
 from alppi.responses import ResponseHelper
 from alppi.utils.decorators import permission_required
-from alppi.utils.groups import SUPERUSER
+from alppi.utils.groups import SUPERUSER, ADMINISTRATOR
 from apps.ct_requests.drct_penalty.drct_penalty import BaseDRCTPenalty
 from apps.ct_requests.drct_penalty.serializer import DRCTPenaltySerializer
+from apps.ct_requests.models import DRCTPenalty
 from common.pagination.pagination import CustomPagination
 
 
@@ -22,7 +23,7 @@ logger = logging.getLogger('django')
 
 ALPPIDEVEL = os.getenv('ALPPIDEVEL')
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class DRCTPenaltyView(APIView, BaseDRCTPenalty):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -43,7 +44,7 @@ class DRCTPenaltyView(APIView, BaseDRCTPenalty):
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class UpdateDRCTPenaltyView(APIView, BaseDRCTPenalty):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -68,7 +69,7 @@ class UpdateDRCTPenaltyView(APIView, BaseDRCTPenalty):
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class ListDRCTPenaltyView(APIView, CustomPagination):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -89,7 +90,7 @@ class ListDRCTPenaltyView(APIView, CustomPagination):
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class CreateDRCTPenaltyView(APIView):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -127,31 +128,5 @@ class DeleteDRCTPenaltyView(APIView, BaseDRCTPenalty):
 
         except Exception as error:
             message = 'Problemas ao deletar DRCTPenalty'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
-
-
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class ChangeStatusDRCTPenaltyView(APIView, BaseDRCTPenalty):
-    authentication_classes  = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-    
-    def put(self, request, pk, format=None) -> ResponseHelper:
-        try:
-            data = request.data
-            drct_penalty_obj, error = self.get_object(pk)
-            if error:
-                return error
-
-            drct_penalty_obj.is_active = data.get('is_active')
-            drct_penalty_obj.save()
-            logger.info('Alterando status do request para {}.'.format(data.get('is_active')))
-
-            message = 'DRCTPenalty atualizado com sucesso.'
-            return  ResponseHelper.HTTP_200({'results': message})
-
-        except Exception as error:
-
-            message = 'Problemas ao alterar status do request'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
