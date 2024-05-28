@@ -76,9 +76,9 @@ class ListDRCTStudentRequestView(APIView, CustomPagination):
 
     def get(self, request, format=None) -> ResponseHelper:
         try:
-            requests = DRCTStudentRequest.objects.all()
+            student_request = DRCTStudentRequest.objects.all()
             drct_student_request_paginate = self.paginate_queryset(
-                requests, request, view=self)
+                student_request, request, view=self)
 
             serializer = DRCTStudentRequestSerializer(
                 drct_student_request_paginate, many=True)

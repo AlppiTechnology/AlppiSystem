@@ -122,13 +122,13 @@ class DeleteSchoolYearView(APIView, BaseSchoolYear):
             if error:
                 return error
             
-            _, error = BSYD.delete_school_year_date(pk)
-            if error:
-                return error
+            # _, error = BSYD.delete_school_year_date(pk)
+            # if error:
+            #     return error
             
-            _, error = BSYS.delete_school_year_skill(pk)
-            if error:
-                return error
+            # _, error = BSYS.delete_school_year_skill(pk)
+            # if error:
+            #     return error
 
 
             school_year_obj.delete()

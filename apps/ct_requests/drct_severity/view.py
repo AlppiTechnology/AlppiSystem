@@ -76,9 +76,9 @@ class ListDRCTSeverityView(APIView, CustomPagination):
 
     def get(self, request, format=None) -> ResponseHelper:
         try:
-            requests = DRCTSeverity.objects.all()
+            severity = DRCTSeverity.objects.all()
             drct_severity_paginate = self.paginate_queryset(
-                requests, request, view=self)
+                severity, request, view=self)
 
             serializer = DRCTSeveritySerializer(
                 drct_severity_paginate, many=True)

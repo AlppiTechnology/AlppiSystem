@@ -76,9 +76,9 @@ class ListDRCTCommentView(APIView, CustomPagination):
 
     def get(self, request, format=None) -> ResponseHelper:
         try:
-            requests = DRCTComment.objects.all()
+            comments = DRCTComment.objects.all()
             drct_comment_paginate = self.paginate_queryset(
-                requests, request, view=self)
+                comments, request, view=self)
 
             serializer = DRCTCommentSerializer(
                 drct_comment_paginate, many=True)

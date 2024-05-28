@@ -15,7 +15,7 @@ from alppi.utils.decorators import permission_required
 from alppi.utils.groups import ADMINISTRATOR, SUPERUSER
 from apps.ct_requests.drct_chapter.drct_chapter import BaseDRCTChapter
 from apps.ct_requests.drct_chapter.serializer import DRCTChapterSerializer
-from apps.ct_requests.models import DRCTChapter
+from apps.ct_requests.models import DRCTChapter, DRCTSection
 from common.pagination.pagination import CustomPagination
 
 
@@ -51,9 +51,15 @@ class ListDRCTChapterView(APIView, CustomPagination):
 
     def get(self, request, format=None) -> ResponseHelper:
         try:
-            requests = DRCTChapter.objects.all()
+            name = request.GET.get('name', None)
+
+            if name:
+                chapter = DRCTChapter.objects.filter(name__icontains=name)
+            else:
+                chapter = DRCTChapter.objects.all()
+
             drct_chapte_paginate = self.paginate_queryset(
-                requests, request, view=self)
+                chapter, request, view=self)
 
             serializer = DRCTChapterSerializer(
                 drct_chapte_paginate, many=True)

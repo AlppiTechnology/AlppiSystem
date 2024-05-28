@@ -16,6 +16,18 @@ class DRCTSeverity(models.Model):
     class Meta:
         db_table = "tb_drct_severity"
 
+class DRCTSeverityItem(models.Model):
+    pk_drct_severity_item = models.AutoField(primary_key=True, unique=True)
+    fk_drct_severit = models.ForeignKey(
+        DRCTSeverity, db_column='fk_drct_severity', on_delete=models.CASCADE)
+    name = models.CharField(null=False, max_length=100)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "tb_drct_severity_item"
+
 
 class DRCTPenalty(models.Model):
     pk_drct_penalty = models.AutoField(primary_key=True, unique=True)
@@ -27,9 +39,20 @@ class DRCTPenalty(models.Model):
     class Meta:
         db_table = "tb_drct_penalty"
 
+class DRCTTitle(models.Model):
+    pk_drct_title = models.AutoField(primary_key=True, unique=True)
+    name = models.CharField(null=False, max_length=100)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "tb_drct_title"
 
 class DRCTChapter(models.Model):
     pk_drct_chapter = models.AutoField(primary_key=True, unique=True)
+    fk_drct_title = models.ForeignKey(
+        DRCTTitle, db_column='fk_drct_title', on_delete=models.CASCADE)
     name = models.CharField(null=False, max_length=100)
 
     def __str__(self):
@@ -42,8 +65,9 @@ class DRCTChapter(models.Model):
 class DRCTSection(models.Model):
     pk_drct_section = models.AutoField(primary_key=True, unique=True)
     fk_drct_chapter = models.ForeignKey(
-        DRCTChapter, db_column='fk_drct_chapter', on_delete=models.DO_NOTHING)
+        DRCTChapter, db_column='fk_drct_chapter', on_delete=models.CASCADE)
     name = models.CharField(null=False, max_length=100)
+    value = models.FloatField(default= 0.0)
 
     def __str__(self):
         return self.name
@@ -55,7 +79,7 @@ class DRCTSection(models.Model):
 class DRCTParagraph(models.Model):
     pk_drct_paragraph = models.AutoField(primary_key=True, unique=True)
     fk_drct_section = models.ForeignKey(
-        DRCTSection, db_column='fk_drct_section', on_delete=models.DO_NOTHING)
+        DRCTSection, db_column='fk_drct_section', on_delete=models.CASCADE)
     name = models.CharField(null=False, max_length=100)
     value = models.FloatField(default= 0.0)
 

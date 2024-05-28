@@ -76,9 +76,19 @@ class ListDRCTSectionView(APIView, CustomPagination):
 
     def get(self, request, format=None) -> ResponseHelper:
         try:
-            requests = DRCTSection.objects.all()
+            chapter = request.GET.get('chapter', None)
+            name = request.GET.get('name', None)
+
+            if chapter:
+                section = DRCTSection.objects.filter(fk_drct_chapter=chapter)
+            else:
+                section = DRCTSection.objects.all()
+
+            if name:
+                section = section.filter(name__icontains=name)
+
             drct_section_paginate = self.paginate_queryset(
-                requests, request, view=self)
+                section, request, view=self)
 
             serializer = DRCTSectionSerializer(
                 drct_section_paginate, many=True)

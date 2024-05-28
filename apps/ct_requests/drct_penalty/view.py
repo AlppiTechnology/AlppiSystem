@@ -76,9 +76,9 @@ class ListDRCTPenaltyView(APIView, CustomPagination):
 
     def get(self, request, format=None) -> ResponseHelper:
         try:
-            requests = DRCTPenalty.objects.all()
+            penality = DRCTPenalty.objects.all()
             drct_penalty_paginate = self.paginate_queryset(
-                requests, request, view=self)
+                penality, request, view=self)
 
             serializer = DRCTPenaltySerializer(
                 drct_penalty_paginate, many=True)

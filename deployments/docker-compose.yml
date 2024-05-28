@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+  AlppiSystem :
+    container_name: system
+    image: alppisystem:v1.0.0
+    restart: always
+    ports:
+      - "7002:7002"
+    expose:
+      - "7002"
+    env_file:
+      - .env
+    networks:
+      network-service:
+        ipv4_address: 10.10.0.22
+
+networks:
+  network-service:
+    name: network-service
+    external: true

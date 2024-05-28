@@ -76,9 +76,19 @@ class ListDRCTParagraphView(APIView, CustomPagination):
 
     def get(self, request, format=None) -> ResponseHelper:
         try:
-            requests = DRCTParagraph.objects.all()
+            section = request.GET.get('section', None)
+            name = request.GET.get('name', None)
+
+            if section:
+                paragraph = DRCTParagraph.objects.filter(fk_drct_section=section)
+            else:
+                paragraph = DRCTParagraph.objects.all()
+
+            if name:
+                paragraph = paragraph.filter(name__icontains=name)
+
             drct_paragraph_paginate = self.paginate_queryset(
-                requests, request, view=self)
+                paragraph, request, view=self)
 
             serializer = DRCTParagraphSerializer(
                 drct_paragraph_paginate, many=True)

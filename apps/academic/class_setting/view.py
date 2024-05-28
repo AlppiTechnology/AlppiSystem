@@ -115,15 +115,15 @@ class DeleteClassSettingView(APIView, BaseClassSetting):
             if error:
                 return error
             
-            BPS = BasePedagogicalSetting()
-            _, error = BPS.delete_pedagogical_setting(pk)
-            if error:
-                return error
+            # BPS = BasePedagogicalSetting()
+            # _, error = BPS.delete_pedagogical_setting(pk)
+            # if error:
+            #     return error
 
-            BSC = BaseStudentClass()
-            _, error = BSC.delete_student_class(pk)
-            if error:
-                return error
+            # BSC = BaseStudentClass()
+            # _, error = BSC.delete_student_class(pk)
+            # if error:
+            #     return error
             
             class_setting_obj.delete()
             return  ResponseHelper.HTTP_204()
