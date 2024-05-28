@@ -206,6 +206,7 @@ class CreateEmployeeView(APIView, BaseEmployee):
             data['edited'] = datetime.now()
             data['last_login'] = datetime.now()
             data['is_active'] = 1
+            employee_obj = None
 
             # deixa as primeiras letras dos no
             uppercase_first(data, ['username'])
@@ -224,7 +225,8 @@ class CreateEmployeeView(APIView, BaseEmployee):
             groups = set(data.get('groups'))
             
             # remove o grupo estudante caso envie por engano
-            groups.remove('estudante')
+            if 'estudante' in groups or 'Estudante' in groups:
+                groups.remove('estudante')
 
             serializer = EmployeeSerializer(data=data)
             if serializer.is_valid():
