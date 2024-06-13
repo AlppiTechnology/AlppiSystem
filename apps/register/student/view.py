@@ -162,7 +162,7 @@ class ListStudentView(APIView, CustomPagination, BaseStudent):
             student_paginate = self.paginate_queryset(
                 student_info, request, view=self)
 
-            return  ResponseHelper.HTTP_200({'results': self.get_paginated_response(student_paginate).data})
+            return  ResponseHelper.HTTP_200(self.get_paginated_response(student_paginate).data)
 
 
         except Exception as error:

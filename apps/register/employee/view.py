@@ -179,7 +179,7 @@ class ListEmployeeView(APIView, CustomPagination, BaseEmployee):
             employee_paginate = self.paginate_queryset(
                 employee_info, request, view=self)
 
-            return  ResponseHelper.HTTP_200({'results': self.get_paginated_response(employee_paginate).data})
+            return  ResponseHelper.HTTP_200(self.get_paginated_response(employee_paginate).data)
 
 
         except Exception as error:
