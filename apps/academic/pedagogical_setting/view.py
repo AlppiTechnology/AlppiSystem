@@ -31,7 +31,7 @@ class ListPedagogicalView(APIView, CustomPagination):
         try:
             year = request.GET.get('year',None)
             search_status = request.GET.get('status', None)
-            class_name = request.GET.get('class_name',None)
+            search_class_name = request.GET.get('search',None)
             fk_school_grade = request.GET.get('school_grade',None)
             jwt_token = request.jwt_token
             user_group = jwt_token.get('group').lower()
@@ -59,8 +59,8 @@ class ListPedagogicalView(APIView, CustomPagination):
                 class_settings = class_settings.filter(status = search_status)
 
             # filtra pelo nome da turma
-            if class_name:
-                class_settings = class_settings.filter(name = class_name)
+            if search_class_name:
+                class_settings = class_settings.filter(name = search_class_name)
 
             # filtra pela serie
             if fk_school_grade:

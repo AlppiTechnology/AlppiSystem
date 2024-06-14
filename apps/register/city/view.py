@@ -28,10 +28,10 @@ class SerachCityView(APIView, CustomPagination):
     def get(self, request, format=None):
         try:
 
-            city_name = request.GET.get('city_name',None)
+            search_city_name = request.GET.get('search',None)
 
-            if city_name:
-                city_list = City.objects.filter(city_name__startswith=city_name.title())
+            if search_city_name:
+                city_list = City.objects.filter(city_name__startswith=search_city_name.title())
             else:
                 return  ResponseHelper.HTTP_200({'results': []})
 

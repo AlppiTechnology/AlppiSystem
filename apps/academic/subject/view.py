@@ -57,7 +57,7 @@ class ListSubjectView(APIView, BaseSubject, CustomPagination):
     def get(self, request, format=None) -> ResponseHelper:
 
         try:
-            search_subject = request.GET.get('subject', None)
+            search_subject = request.GET.get('search', None)
             search_status = request.GET.get('status', '1')
             
             fk_campus = request.jwt_token.get('pk_campus')

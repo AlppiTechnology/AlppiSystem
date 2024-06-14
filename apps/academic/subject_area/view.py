@@ -56,7 +56,7 @@ class ListSubjectAreaView(APIView, BaseSubjectArea, CustomPagination):
 
     def get(self, request, format=None)-> ResponseHelper:
         try:
-            area = request.GET.get('area', None)
+            search_area = request.GET.get('search', None)
             search_status = request.GET.get('status', '1')
 
             fk_campus = request.jwt_token.get('pk_campus')
@@ -65,8 +65,8 @@ class ListSubjectAreaView(APIView, BaseSubjectArea, CustomPagination):
                                                       ).values('pk_subject_area', 'name', 'status')
 
             # filtra deacordo com a area pessada por parametro
-            if area:
-                subject_area = subject_area.filter(name__icontains=area)
+            if search_area:
+                subject_area = subject_area.filter(name__icontains=search_area)
 
             # filtra de acordo com o status passado por parametro
             if search_status:

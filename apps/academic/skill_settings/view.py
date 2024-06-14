@@ -57,7 +57,7 @@ class ListSkillSettingsView(APIView, BaseSkillSettings, CustomPagination):
     def get(self, request, format=None) -> ResponseHelper:
 
         try:
-            label_name = request.GET.get('label_name', None)
+            search_label_name = request.GET.get('search', None)
             search_status = request.GET.get('status', '1')
             
             fk_campus = request.jwt_token.get('pk_campus')
@@ -66,8 +66,8 @@ class ListSkillSettingsView(APIView, BaseSkillSettings, CustomPagination):
                                 ).values('pk_skill_setting','label_name', 'description', 'status')
 
             # filtra deacordo com a skill_settings pessada por parametro
-            if label_name:
-                skill_settings = skill_settings.filter(label_name__icontains=label_name)
+            if search_label_name:
+                skill_settings = skill_settings.filter(label_name__icontains=search_label_name)
 
             # filtra de acordo com o status passado por parametro
             if search_status:
