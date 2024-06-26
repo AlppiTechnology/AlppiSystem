@@ -7,7 +7,7 @@ class DRCTCommentSerializer(serializers.ModelSerializer):
         model = DRCTComment
         fields = [
             'pk_drct_comment',
-            'fk_drct_request',
+            'fk_drct_internal_note',
             'fk_user',
             'date',
             'comment'

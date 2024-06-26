@@ -12,10 +12,10 @@ from alppi.auth.authentication import JwtAutenticationAlppi
 from alppi.auth.permissions import HasPermission, IsViewAllowed
 from alppi.responses import ResponseHelper
 from alppi.utils.decorators import permission_required
-from alppi.utils.groups import SUPERUSER, ADMINISTRATOR
-from apps.ct_requests.drct_paragraph.drct_paragraph import BaseDRCTParagraph
-from apps.ct_requests.drct_paragraph.serializer import DRCTParagraphSerializer
-from apps.ct_requests.models import DRCTParagraph
+from alppi.utils.groups import SUPERUSER
+from apps.ct_requests.drct_internal_note.drct_internal_note import BaseDRCTInternalNote
+from apps.ct_requests.drct_internal_note.serializer import DRCTInternalNoteSerializer
+from apps.ct_requests.models import DRCTInternalNote
 from common.pagination.pagination import CustomPagination
 
 
@@ -23,29 +23,29 @@ logger = logging.getLogger('django')
 
 ALPPIDEVEL = os.getenv('ALPPIDEVEL')
 
-@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
-class DRCTParagraphView(APIView, BaseDRCTParagraph):
+@method_decorator(permission_required(SUPERUSER), name='dispatch')
+class DRCTInternalNoteView(APIView, BaseDRCTInternalNote):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
     def get(self, request, pk, format=None) -> ResponseHelper:
 
         try:
-            drct_paragraph_obj, error = self.get_object(pk)
+            drct_internal_note_obj, error = self.get_object(pk)
             if error:
                 return error
             
-            serializer = DRCTParagraphSerializer(drct_paragraph_obj)
+            serializer = DRCTInternalNoteSerializer(drct_internal_note_obj)
             return  ResponseHelper.HTTP_200({'results': serializer.data})
 
         except Exception as error:
-            message = 'Problemas ao visualizar DRCTParagraph'
+            message = 'Problemas ao visualizar DRCTInternalNote'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
-@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
-class UpdateDRCTParagraphView(APIView, BaseDRCTParagraph):
+@method_decorator(permission_required(SUPERUSER), name='dispatch')
+class UpdateDRCTInternalNoteView(APIView, BaseDRCTInternalNote):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
@@ -53,11 +53,11 @@ class UpdateDRCTParagraphView(APIView, BaseDRCTParagraph):
         try:
             data = request.data
 
-            drct_paragraph_obj, error = self.get_object(pk)
+            drct_internal_note_obj, error = self.get_object(pk)
             if error:
                 return error
 
-            serializer = DRCTParagraphSerializer(drct_paragraph_obj, data=data)
+            serializer = DRCTInternalNoteSerializer(drct_internal_note_obj, data=data)
             if serializer.is_valid():
                 serializer.save()
                 return  ResponseHelper.HTTP_200({'results': serializer.data})
@@ -65,43 +65,33 @@ class UpdateDRCTParagraphView(APIView, BaseDRCTParagraph):
             return  ResponseHelper.HTTP_400({'detail': serializer.errors})
 
         except Exception as error:
-            message = 'Problemas ao editar DRCTParagraph'
+            message = 'Problemas ao editar DRCTInternalNote'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
-@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
-class ListDRCTParagraphView(APIView, CustomPagination):
+@method_decorator(permission_required(SUPERUSER), name='dispatch')
+class ListDRCTInternalNoteView(APIView, CustomPagination):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
     def get(self, request, format=None) -> ResponseHelper:
         try:
-            section = request.GET.get('section', None)
-            name = request.GET.get('name', None)
+            requests = DRCTInternalNote.objects.all()
+            drct_internal_note_paginate = self.paginate_queryset(
+                requests, request, view=self)
 
-            if section:
-                paragraph = DRCTParagraph.objects.filter(fk_drct_section=section)
-            else:
-                paragraph = DRCTParagraph.objects.all()
-
-            if name:
-                paragraph = paragraph.filter(name__icontains=name)
-
-            drct_paragraph_paginate = self.paginate_queryset(
-                paragraph, request, view=self)
-
-            serializer = DRCTParagraphSerializer(
-                drct_paragraph_paginate, many=True)
+            serializer = DRCTInternalNoteSerializer(
+                drct_internal_note_paginate, many=True)
             return  ResponseHelper.HTTP_200(self.get_paginated_response(serializer.data).data)
 
 
         except Exception as error:
-            message = 'Problemas ao listar todos os DRCTParagraph.'
+            message = 'Problemas ao listar todos os DRCTInternalNote.'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
-@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
-class CreateDRCTParagraphView(APIView):
+@method_decorator(permission_required(SUPERUSER), name='dispatch')
+class CreateDRCTInternalNoteView(APIView):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
@@ -109,7 +99,7 @@ class CreateDRCTParagraphView(APIView):
         try:
             data = request.data
 
-            serializer = DRCTParagraphSerializer(data=data)
+            serializer = DRCTInternalNoteSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
                 return  ResponseHelper.HTTP_201({'results': serializer.data})
@@ -117,26 +107,52 @@ class CreateDRCTParagraphView(APIView):
             return  ResponseHelper.HTTP_400({'detail': serializer.errors})
 
         except Exception as error:
-            message = 'Problemas ao cadastrar DRCTParagraph'
+            message = 'Problemas ao cadastrar DRCTInternalNote'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
 @method_decorator(permission_required(SUPERUSER), name='dispatch')
-class DeleteDRCTParagraphView(APIView, BaseDRCTParagraph):
+class DeleteDRCTInternalNoteView(APIView, BaseDRCTInternalNote):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
     def delete(self, request, pk, format=None) -> ResponseHelper:
         try:
-            drct_paragraph_obj, error = self.get_object(pk)
+            drct_internal_note_obj, error = self.get_object(pk)
             if error:
                 return error
             
-            drct_paragraph_obj.delete()
+            drct_internal_note_obj.delete()
             return  ResponseHelper.HTTP_204()
 
         except Exception as error:
-            message = 'Problemas ao deletar DRCTParagraph'
+            message = 'Problemas ao deletar DRCTInternalNote'
+            logger.error({'results': message, 'error:': str(error)})
+            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
+
+
+@method_decorator(permission_required(SUPERUSER), name='dispatch')
+class ChangeStatusDRCTInternalNoteView(APIView, BaseDRCTInternalNote):
+    authentication_classes  = [JwtAutenticationAlppi]
+    permission_classes = [IsViewAllowed, HasPermission]
+    
+    def put(self, request, pk, format=None) -> ResponseHelper:
+        try:
+            data = request.data
+            drct_internal_note_obj, error = self.get_object(pk)
+            if error:
+                return error
+
+            drct_internal_note_obj.is_active = data.get('is_active')
+            drct_internal_note_obj.save()
+            logger.info('Alterando status do request para {}.'.format(data.get('is_active')))
+
+            message = 'DRCTInternalNote atualizado com sucesso.'
+            return  ResponseHelper.HTTP_200({'results': message})
+
+        except Exception as error:
+
+            message = 'Problemas ao alterar status do request'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})

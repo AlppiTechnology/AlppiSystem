@@ -6,143 +6,69 @@ from django.db import models
 from apps.register.models import Campus, User
 
 
-class DRCTSeverity(models.Model):
-    pk_drct_severity = models.AutoField(primary_key=True, unique=True)
-    name = models.CharField(null=False, max_length=100)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = "tb_drct_severity"
-
-class DRCTSeverityItem(models.Model):
-    pk_drct_severity_item = models.AutoField(primary_key=True, unique=True)
-    fk_drct_severit = models.ForeignKey(
-        DRCTSeverity, db_column='fk_drct_severity', on_delete=models.CASCADE)
-    name = models.CharField(null=False, max_length=100)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = "tb_drct_severity_item"
-
-
-class DRCTPenalty(models.Model):
-    pk_drct_penalty = models.AutoField(primary_key=True, unique=True)
-    name = models.CharField(null=False, max_length=320)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = "tb_drct_penalty"
-
-class DRCTTitle(models.Model):
-    pk_drct_title = models.AutoField(primary_key=True, unique=True)
-    name = models.CharField(null=False, max_length=100)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = "tb_drct_title"
-
-class DRCTChapter(models.Model):
-    pk_drct_chapter = models.AutoField(primary_key=True, unique=True)
-    fk_drct_title = models.ForeignKey(
-        DRCTTitle, db_column='fk_drct_title', on_delete=models.CASCADE)
-    name = models.CharField(null=False, max_length=100)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = "tb_drct_chapter"
-
-
-class DRCTSection(models.Model):
-    pk_drct_section = models.AutoField(primary_key=True, unique=True)
-    fk_drct_chapter = models.ForeignKey(
-        DRCTChapter, db_column='fk_drct_chapter', on_delete=models.CASCADE)
-    name = models.CharField(null=False, max_length=100)
-    value = models.FloatField(default= 0.0)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = "tb_drct_section"
-
-
-class DRCTParagraph(models.Model):
-    pk_drct_paragraph = models.AutoField(primary_key=True, unique=True)
-    fk_drct_section = models.ForeignKey(
-        DRCTSection, db_column='fk_drct_section', on_delete=models.CASCADE)
-    name = models.CharField(null=False, max_length=100)
-    value = models.FloatField(default= 0.0)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = "tb_drct_paragraph"
-
-
-class DRCTRequest(models.Model):
-    pk_drct_request = models.AutoField(primary_key=True, unique=True)
+class DRCTInternalNote(models.Model):
+    pk_drct_internal_note = models.AutoField(primary_key=True, unique=True)
     title = models.CharField(null=False, max_length=128)
     fk_reporter = models.ForeignKey(
         User, db_column='fk_reporter', on_delete=models.DO_NOTHING)
     fk_campus = models.ForeignKey(
         Campus, db_column='fk_campus', on_delete=models.DO_NOTHING)
-    fk_drct_severity = models.ForeignKey(
-        DRCTSeverity, db_column='fk_drct_severity', on_delete=models.DO_NOTHING)
-    fk_drct_penalty = models.ForeignKey(
-        DRCTPenalty, db_column='fk_drct_penalty', on_delete=models.DO_NOTHING)
-    fk_drct_chapter  = models.ForeignKey(
-        DRCTChapter, db_column='fk_drct_chapter', on_delete=models.DO_NOTHING)
-    fk_drct_section = models.ForeignKey(
-        DRCTSection, db_column='fk_drct_section', on_delete=models.DO_NOTHING)
-    fk_drct_paragraph = models.ForeignKey(
-        DRCTParagraph, db_column='fk_drct_paragraph', on_delete=models.DO_NOTHING)
-    date = models.DateField(null=False)
+    drct_single_attach = models.CharField(null=False, max_length=30)
+    ctdr_deadline = models.DateField(null=False)
+    ctdr_student_deadline  = models.DateField(null=False)
+    ctdr_cal_statement = models.IntegerField(null=True)
+    ctdr_cmdt_statement = models.IntegerField(null=True)
+    ctdr_cmdt_answer = models.IntegerField(null=True)
+    created = models.DateTimeField(auto_now_add=True, null=False)
+    updated = models.DateTimeField(null=False)
     status = models.IntegerField(null=False)
+
 
     def __str__(self):
         return self.title
 
     class Meta:
-        db_table = "tb_drct_request"
+        db_table = "tb_drct_internal_note"
 
 
-class DRCTStudentRequest(models.Model):
-    pk_drct_student_request = models.AutoField(primary_key=True, unique=True)
-    fk_drct_request = models.ForeignKey(
-        DRCTRequest, db_column='fk_drct_request', on_delete=models.DO_NOTHING)
+class DRCTStudentInternalNote(models.Model):
+    pk_drct_student_internal_note = models.AutoField(primary_key=True, unique=True)
+    fk_drct_internal_note = models.ForeignKey(
+        DRCTInternalNote, db_column='fk_drct_internal_note', on_delete=models.CASCADE)
     fk_student = models.ForeignKey(
         User, db_column='fk_student', on_delete=models.DO_NOTHING)
 
     def __str__(self):
-        return self.fk_drct_request
+        return self.fk_drct_internal_note
 
     class Meta:
-        db_table = "tb_drct_student_request"
+        db_table = "tb_drct_student_internal_note"
 
 
 class DRCTComment(models.Model):
     pk_drct_comment = models.AutoField(primary_key=True, unique=True)
-    fk_drct_request = models.ForeignKey(
-        DRCTRequest, db_column='fk_drct_request', on_delete=models.DO_NOTHING)
+    fk_drct_internal_note = models.ForeignKey(
+        DRCTInternalNote, db_column='fk_drct_internal_note', on_delete=models.CASCADE)
     fk_user = models.ForeignKey(
         User, db_column='fk_user', on_delete=models.DO_NOTHING)
-    date = models.DateField(null=False)
+    date = models.DateTimeField(auto_now_add=True,  null=False)
     comment = models.TextField()
 
 
     def __str__(self):
-        return self.fk_drct_request
+        return self.fk_drct_internal_note
 
     class Meta:
         db_table = "tb_drct_comment"
+
+class DRCTRegulament(models.Model):
+    pk_drct_regulament = models.AutoField(primary_key=True, unique=True)
+    fk_drct_internal_note = models.ForeignKey(
+        DRCTInternalNote, db_column='fk_drct_internal_note', on_delete=models.CASCADE)
+    regulament = models.CharField(null=False, max_length=30)
+
+    def __str__(self):
+        return self.regulament
+
+    class Meta:
+        db_table = "tb_drct_regulament"

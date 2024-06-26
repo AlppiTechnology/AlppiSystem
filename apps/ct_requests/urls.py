@@ -4,52 +4,42 @@ from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 
 
-from apps.ct_requests.drct_chapter import view as chapter_view
-from apps.ct_requests.drct_section import view as section_view
-from apps.ct_requests.drct_paragraph import view as paragraph_view
-from apps.ct_requests.drct_penalty import view as penalty_view
-from apps.ct_requests.drct_severity import view as severity_view
-from apps.ct_requests.drct_request import view as request_view
-from apps.ct_requests.drct_student_request import view as student_request_view
+from apps.ct_requests.drct_regulament import view as regulament_view
+from apps.ct_requests.drct_internal_note import view as internal_note_view
+from apps.ct_requests.drct_student_internal_note import view as student_internal_note_view
 from apps.ct_requests.drct_comment import view as comment_view
 
 
 
 urlpatterns = [
-    # ------------- Chapter / Captulo -------------
-    path('chapter/list/', chapter_view.ListDRCTChapterView.as_view(), name='chapter_list'),
-    path('chapter/create/', chapter_view.CreateDRCTChapterView.as_view(), name='chapter_create'),
-    path('chapter/<int:pk>/', chapter_view.DRCTChapterView.as_view(), name='chapter_data'),
-    path('chapter/<int:pk>/update/', chapter_view.UpdateDRCTChapterView.as_view(), name='chapter_update'),
-    path('chapter/<int:pk>/delete/', chapter_view.DeleteDRCTChapterView.as_view(), name='chapter_delete'),
+    # ------------- regulament / Regulamentos -------------
+    path('regulament/list/', regulament_view.ListDRCTRegulamentView.as_view(), name='regulament_list'),
+    path('regulament/create/', regulament_view.CreateDRCTRegulamentView.as_view(), name='regulament_create'),
+    path('regulament/<int:pk>/', regulament_view.DRCTRegulamentView.as_view(), name='regulament_data'),
+    path('regulament/<int:pk>/update/', regulament_view.UpdateDRCTRegulamentView.as_view(), name='regulament_update'),
+    path('regulament/<int:pk>/delete/', regulament_view.DeleteDRCTRegulamentView.as_view(), name='regulament_delete'),
 
-    # ------------- Section / Artigo -------------
-    path('section/list/', section_view.ListDRCTSectionView.as_view(), name='section_list'),
-    path('section/create/', section_view.CreateDRCTSectionView.as_view(), name='section_create'),
-    path('section/<int:pk>/', section_view.DRCTSectionView.as_view(), name='section_data'),
-    path('section/<int:pk>/update/', section_view.UpdateDRCTSectionView.as_view(), name='section_update'),
-    path('section/<int:pk>/delete/', section_view.DeleteDRCTSectionView.as_view(), name='section_delete'),
+    # ------------- DRCTInternalNote / Comunicado Interno (CI) -------------
+    path('internal_note/list/', internal_note_view.ListDRCTInternalNoteView.as_view(), name='internal_note_list'),
+    path('internal_note/create/', internal_note_view.CreateDRCTInternalNoteView.as_view(), name='internal_note_create'),
+    path('internal_note/<int:pk>/', internal_note_view.DRCTInternalNoteView.as_view(), name='internal_note_data'),
+    path('internal_note/<int:pk>/update/', internal_note_view.UpdateDRCTInternalNoteView.as_view(), name='internal_note_update'),
+    path('internal_note/<int:pk>/delete/', internal_note_view.DeleteDRCTInternalNoteView.as_view(), name='internal_note_delete'),
 
-    # ------------- Paragraph / Paragrafo -------------
-    path('paragraph/list/', paragraph_view.ListDRCTParagraphView.as_view(), name='paragraph_list'),
-    path('paragraph/create/', paragraph_view.CreateDRCTParagraphView.as_view(), name='paragraph_create'),
-    path('paragraph/<int:pk>/', paragraph_view.DRCTParagraphView.as_view(), name='paragraph_data'),
-    path('paragraph/<int:pk>/update/', paragraph_view.UpdateDRCTParagraphView.as_view(), name='paragraph_update'),
-    path('paragraph/<int:pk>/delete/', paragraph_view.DeleteDRCTParagraphView.as_view(), name='paragraph_delete'),
+    # ------------- DRCTStudentInternalNote / Estudante do Comunicado Interno -------------
+    path('student_internal_note/list/', student_internal_note_view.ListDRCTStudentInternalNoteView.as_view(), name='student_internal_note_list'),
+    path('student_internal_note/create/', student_internal_note_view.CreateDRCTStudentInternalNoteView.as_view(), name='student_internal_note_create'),
+    path('student_internal_note/<int:pk>/', student_internal_note_view.DRCTStudentInternalNoteView.as_view(), name='student_internal_note_data'),
+    path('student_internal_note/<int:pk>/update/', student_internal_note_view.UpdateDRCTStudentInternalNoteView.as_view(), name='student_internal_note_update'),
+    path('student_internal_note/<int:pk>/delete/', student_internal_note_view.DeleteDRCTStudentInternalNoteView.as_view(), name='student_internal_note_delete'),
 
-    # ------------- Severity / Criticidade -------------
-    path('severity/list/', severity_view.ListDRCTSeverityView.as_view(), name='severity_list'),
-    path('severity/create/', severity_view.CreateDRCTSeverityView.as_view(), name='severity_create'),
-    path('severity/<int:pk>/', severity_view.DRCTSeverityView.as_view(), name='severity_data'),
-    path('severity/<int:pk>/update/', severity_view.UpdateDRCTSeverityView.as_view(), name='severity_update'),
-    path('severity/<int:pk>/delete/', severity_view.DeleteDRCTSeverityView.as_view(), name='severity_delete'),
 
-    # ------------- Penalty / Penalidade -------------
-    path('penalty/list/', penalty_view.ListDRCTPenaltyView.as_view(), name='penalty_list'),
-    path('penalty/create/', penalty_view.CreateDRCTPenaltyView.as_view(), name='penalty_create'),
-    path('penalty/<int:pk>/', penalty_view.DRCTPenaltyView.as_view(), name='penalty_data'),
-    path('penalty/<int:pk>/update/', penalty_view.UpdateDRCTPenaltyView.as_view(), name='penalty_update'),
-    path('penalty/<int:pk>/delete/', penalty_view.DeleteDRCTPenaltyView.as_view(), name='penalty_delete'),
+    # ------------- Comment / Comentarios -------------
+    path('comment/list/', comment_view.ListDRCTCommentView.as_view(), name='comment_list'),
+    path('comment/create/', comment_view.CreateDRCTCommentView.as_view(), name='comment_create'),
+    path('comment/<int:pk>/', comment_view.DRCTCommentView.as_view(), name='comment_data'),
+    path('comment/<int:pk>/update/', comment_view.UpdateDRCTCommentView.as_view(), name='comment_update'),
+    path('comment/<int:pk>/delete/', comment_view.DeleteDRCTCommentView.as_view(), name='comment_delete'),
 
 
 ]

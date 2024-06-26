@@ -13,9 +13,9 @@ from alppi.auth.permissions import HasPermission, IsViewAllowed
 from alppi.responses import ResponseHelper
 from alppi.utils.decorators import permission_required
 from alppi.utils.groups import SUPERUSER, ADMINISTRATOR
-from apps.ct_requests.drct_section.drct_section import BaseDRCTSection
-from apps.ct_requests.drct_section.serializer import DRCTSectionSerializer
-from apps.ct_requests.models import DRCTSection
+from apps.ct_requests.drct_regulament.drct_regulament import BaseDRCTRegulament
+from apps.ct_requests.drct_regulament.serializer import DRCTRegulamenterializer
+from apps.ct_requests.models import DRCTRegulament
 from common.pagination.pagination import CustomPagination
 
 
@@ -24,28 +24,28 @@ logger = logging.getLogger('django')
 ALPPIDEVEL = os.getenv('ALPPIDEVEL')
 
 @method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
-class DRCTSectionView(APIView, BaseDRCTSection):
+class DRCTRegulamentView(APIView, BaseDRCTRegulament):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
     def get(self, request, pk, format=None) -> ResponseHelper:
 
         try:
-            drct_section_obj, error = self.get_object(pk)
+            drct_regulament_obj, error = self.get_object(pk)
             if error:
                 return error
             
-            serializer = DRCTSectionSerializer(drct_section_obj)
+            serializer = DRCTRegulamenterializer(drct_regulament_obj)
             return  ResponseHelper.HTTP_200({'results': serializer.data})
 
         except Exception as error:
-            message = 'Problemas ao visualizar DRCTSection'
+            message = 'Problemas ao visualizar DRCTRegulament'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
 @method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
-class UpdateDRCTSectionView(APIView, BaseDRCTSection):
+class UpdateDRCTRegulamentView(APIView, BaseDRCTRegulament):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
@@ -53,11 +53,11 @@ class UpdateDRCTSectionView(APIView, BaseDRCTSection):
         try:
             data = request.data
 
-            drct_section_obj, error = self.get_object(pk)
+            drct_regulament_obj, error = self.get_object(pk)
             if error:
                 return error
 
-            serializer = DRCTSectionSerializer(drct_section_obj, data=data)
+            serializer = DRCTRegulamenterializer(drct_regulament_obj, data=data)
             if serializer.is_valid():
                 serializer.save()
                 return  ResponseHelper.HTTP_200({'results': serializer.data})
@@ -65,43 +65,33 @@ class UpdateDRCTSectionView(APIView, BaseDRCTSection):
             return  ResponseHelper.HTTP_400({'detail': serializer.errors})
 
         except Exception as error:
-            message = 'Problemas ao editar DRCTSection'
+            message = 'Problemas ao editar DRCTRegulament'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 @method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
-class ListDRCTSectionView(APIView, CustomPagination):
+class ListDRCTRegulamentView(APIView, CustomPagination):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
     def get(self, request, format=None) -> ResponseHelper:
         try:
-            chapter = request.GET.get('chapter', None)
-            name = request.GET.get('name', None)
+            penality = DRCTRegulament.objects.all()
+            drct_regulament_paginate = self.paginate_queryset(
+                penality, request, view=self)
 
-            if chapter:
-                section = DRCTSection.objects.filter(fk_drct_chapter=chapter)
-            else:
-                section = DRCTSection.objects.all()
-
-            if name:
-                section = section.filter(name__icontains=name)
-
-            drct_section_paginate = self.paginate_queryset(
-                section, request, view=self)
-
-            serializer = DRCTSectionSerializer(
-                drct_section_paginate, many=True)
+            serializer = DRCTRegulamenterializer(
+                drct_regulament_paginate, many=True)
             return  ResponseHelper.HTTP_200(self.get_paginated_response(serializer.data).data)
 
 
         except Exception as error:
-            message = 'Problemas ao listar todos os DRCTSection.'
+            message = 'Problemas ao listar todos os DRCTRegulament.'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 @method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
-class CreateDRCTSectionView(APIView):
+class CreateDRCTRegulamentView(APIView):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
@@ -109,7 +99,7 @@ class CreateDRCTSectionView(APIView):
         try:
             data = request.data
 
-            serializer = DRCTSectionSerializer(data=data)
+            serializer = DRCTRegulamenterializer(data=data)
             if serializer.is_valid():
                 serializer.save()
                 return  ResponseHelper.HTTP_201({'results': serializer.data})
@@ -117,28 +107,26 @@ class CreateDRCTSectionView(APIView):
             return  ResponseHelper.HTTP_400({'detail': serializer.errors})
 
         except Exception as error:
-            message = 'Problemas ao cadastrar DRCTSection'
+            message = 'Problemas ao cadastrar DRCTRegulament'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
 @method_decorator(permission_required(SUPERUSER), name='dispatch')
-class DeleteDRCTSectionView(APIView, BaseDRCTSection):
+class DeleteDRCTRegulamentView(APIView, BaseDRCTRegulament):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
     def delete(self, request, pk, format=None) -> ResponseHelper:
         try:
-            drct_section_obj, error = self.get_object(pk)
+            drct_regulament_obj, error = self.get_object(pk)
             if error:
                 return error
             
-            drct_section_obj.delete()
+            drct_regulament_obj.delete()
             return  ResponseHelper.HTTP_204()
 
         except Exception as error:
-            message = 'Problemas ao deletar DRCTSection'
+            message = 'Problemas ao deletar DRCTRegulament'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
-
-

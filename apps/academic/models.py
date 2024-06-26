@@ -192,7 +192,7 @@ class PedagogicalSetting(models.Model):
     status = models.IntegerField(null=False)
 
     def __str__(self):
-        return self.fk_employee_user.username
+        return self.fk_class_setting.name + ' - ' + self.fk_employee_user.username
 
     class Meta:
         db_table = "tb_pedagogical_setting"
