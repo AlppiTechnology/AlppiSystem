@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
+from datetime import datetime
 import logging
 
 from alppi.responses import ResponseHelper
@@ -39,3 +40,29 @@ class BaseDRCTRegulament():
 
         selrializer = DRCTRegulamenterializer(drct_regulament_id)
         return drct_regulament_id, selrializer.data
+    
+    def create_pdrct_regulament(self, pedagogical:dict, fk_class_setting:int):
+        try:
+             # verifica se existe disciplinas repetidas
+            repeated_subject = validate_repeated_subject(pedagogical)
+            if repeated_subject:
+                return None, repeated_subject
+
+            for data in pedagogical:
+
+                data['fk_class_setting'] = fk_class_setting
+                data['edited'] = datetime.now()
+                data['status'] = 1
+
+                serializer = PedagogicalSettingSerializer(data=data)
+                if serializer.is_valid():
+                    serializer.save()
+
+                else:
+                    return  (None, ResponseHelper.HTTP_404({'detail': serializer.errors}))
+            return None, None
+
+        except PedagogicalSetting.DoesNotExist:
+            message = 'Não foi possivel encontrar todos os PedagogicalSetting.'
+            logger.error({'results': message})
+            return  (None, ResponseHelper.HTTP_404({'detail': message}))

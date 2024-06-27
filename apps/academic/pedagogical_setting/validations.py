@@ -2,10 +2,6 @@
 # -*- encoding: utf-8 -*-
 import logging
 
-from datetime import date
-from django.core.exceptions import ValidationError
-from django.contrib.auth import get_user_model
-
 from alppi.responses import ResponseHelper
 
 logger = logging.getLogger('django')
