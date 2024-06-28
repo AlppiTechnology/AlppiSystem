@@ -13,8 +13,11 @@ from alppi.auth.permissions import HasPermission, IsViewAllowed
 from alppi.responses import ResponseHelper
 from alppi.utils.decorators import permission_required
 from alppi.utils.groups import SUPERUSER
+from apps.ct_requests.drct_comment.drct_comment import BaseDRCTComment
 from apps.ct_requests.drct_internal_note.drct_internal_note import BaseDRCTInternalNote
 from apps.ct_requests.drct_internal_note.serializer import DRCTInternalNoteSerializer
+from apps.ct_requests.drct_regulament.drct_regulament import BaseDRCTRegulament
+from apps.ct_requests.drct_student_internal_note.drct_student_internal_note import BaseDRCTStudentInternalNote
 from apps.ct_requests.models import DRCTInternalNote
 from common.pagination.pagination import CustomPagination
 
@@ -98,10 +101,38 @@ class CreateDRCTInternalNoteView(APIView):
     def post(self, request, format=None) -> ResponseHelper:
         try:
             data = request.data
+            regulaments = data.pop('regulaments')
+            students = data.pop('students')
+            comment = data.pop('comments')
+            user = request.user
+
+            data['fk_campus'] = request.jwt_token.get('pk_campus')
+            data['fk_reporter'] = user.pk_user
+            data['created'] = datetime.now()
+            data['created'] = datetime.now()
+            data['status'] = 1
+
 
             serializer = DRCTInternalNoteSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
+                salved_data = serializer.data
+
+                BR= BaseDRCTRegulament()
+                _, error = BR.create_pdrct_regulament(salved_data.get('pk_internal_note'), regulaments)
+                if error:
+                    return error
+                
+                BIN = BaseDRCTStudentInternalNote()
+                _, error = BIN.create_pdrct_student_internal_note(salved_data.get('pk_internal_note'), regulaments)
+                if error:
+                    return error
+                
+                BC = BaseDRCTComment()
+                _, error = BC.create_pdrct_comment(salved_data.get('pk_internal_note'), comment, user.pk_user)
+                if error:
+                    return error
+                
                 return  ResponseHelper.HTTP_201({'results': serializer.data})
 
             return  ResponseHelper.HTTP_400({'detail': serializer.errors})

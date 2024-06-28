@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
 import logging
+from datetime import datetime
 
 from alppi.responses import ResponseHelper
 from apps.ct_requests.models import DRCTStudentInternalNote
@@ -39,3 +40,26 @@ class BaseDRCTStudentInternalNote():
 
         selrializer = DRCTStudentInternalNoteSerializer(drct_student_internal_note_id)
         return drct_student_internal_note_id, selrializer.data
+    
+    def create_pdrct_student_internal_note(self, internal_note:int, students:list):
+        try:
+            # verifica se existe disciplinas repetidas
+            students = set(students)
+
+            for student in students:
+                data = {}
+                data['fk_drct_internal_note'] = internal_note
+                data['fk_student'] = student
+
+                serializer = DRCTStudentInternalNoteSerializer(data=data)
+                if serializer.is_valid():
+                    serializer.save()
+
+                else:
+                    return  (None, ResponseHelper.HTTP_404({'detail': serializer.errors}))
+            return None, None
+
+        except DRCTStudentInternalNote.DoesNotExist:
+            message = 'Não foi possivel encontrar todos os DRCTStudentInternalNote.'
+            logger.error({'results': message})
+            return  (None, ResponseHelper.HTTP_404({'detail': message}))

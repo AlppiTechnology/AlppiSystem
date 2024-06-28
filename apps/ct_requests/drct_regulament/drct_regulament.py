@@ -4,6 +4,7 @@ from datetime import datetime
 import logging
 
 from alppi.responses import ResponseHelper
+from apps.ct_requests.drct_regulament.validations import validate_repeated_regulaments
 from apps.ct_requests.models import DRCTRegulament
 from apps.ct_requests.drct_regulament.serializer import DRCTRegulamenterializer
 
@@ -41,20 +42,19 @@ class BaseDRCTRegulament():
         selrializer = DRCTRegulamenterializer(drct_regulament_id)
         return drct_regulament_id, selrializer.data
     
-    def create_pdrct_regulament(self, pedagogical:dict, fk_class_setting:int):
+    def create_pdrct_regulament(self, internal_note:int, regulaments:list):
         try:
              # verifica se existe disciplinas repetidas
-            repeated_subject = validate_repeated_subject(pedagogical)
+            repeated_subject = validate_repeated_regulaments(regulaments)
             if repeated_subject:
                 return None, repeated_subject
 
-            for data in pedagogical:
+            for regulament in regulaments:
+                data = {}
+                data['fk_drct_internal_note'] = internal_note
+                data['regulament'] = regulament
 
-                data['fk_class_setting'] = fk_class_setting
-                data['edited'] = datetime.now()
-                data['status'] = 1
-
-                serializer = PedagogicalSettingSerializer(data=data)
+                serializer = DRCTRegulamenterializer(data=data)
                 if serializer.is_valid():
                     serializer.save()
 
@@ -62,7 +62,7 @@ class BaseDRCTRegulament():
                     return  (None, ResponseHelper.HTTP_404({'detail': serializer.errors}))
             return None, None
 
-        except PedagogicalSetting.DoesNotExist:
-            message = 'Não foi possivel encontrar todos os PedagogicalSetting.'
+        except DRCTRegulament.DoesNotExist:
+            message = 'Não foi possivel encontrar todos os DRCTRegulament.'
             logger.error({'results': message})
             return  (None, ResponseHelper.HTTP_404({'detail': message}))

@@ -39,3 +39,24 @@ class BaseDRCTComment():
 
         selrializer = DRCTCommentSerializer(drct_comment_id)
         return drct_comment_id, selrializer.data
+
+    def create_pdrct_comment(self, internal_note:int, comment:str, user_id:int):
+        try:
+
+            data = {}
+            data['fk_drct_internal_note'] = internal_note
+            data['fk_user'] = user_id
+            data['comment'] = comment
+
+            serializer = DRCTCommentSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return None, None
+
+            else:
+                return  (None, ResponseHelper.HTTP_404({'detail': serializer.errors}))
+
+        except DRCTComment.DoesNotExist:
+            message = 'Não foi possivel encontrar todos os DRCTComment.'
+            logger.error({'results': message})
+            return  (None, ResponseHelper.HTTP_404({'detail': message}))
