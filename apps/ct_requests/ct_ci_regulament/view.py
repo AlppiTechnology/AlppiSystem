@@ -12,10 +12,10 @@ from alppi.auth.authentication import JwtAutenticationAlppi
 from alppi.auth.permissions import HasPermission, IsViewAllowed
 from alppi.responses import ResponseHelper
 from alppi.utils.decorators import permission_required
-from alppi.utils.groups import SUPERUSER
-from apps.ct_requests.drct_student_internal_note.drct_student_internal_note import BaseDRCTStudentInternalNote
-from apps.ct_requests.drct_student_internal_note.serializer import DRCTStudentInternalNoteSerializer
-from apps.ct_requests.models import DRCTStudentInternalNote
+from alppi.utils.groups import SUPERUSER, ADMINISTRATOR
+from apps.ct_requests.ct_ci_regulament.ct_ci_regulament import BaseCTCIRegulament
+from apps.ct_requests.ct_ci_regulament.serializer import CTCIRegulamentSerializer
+from apps.ct_requests.models import CTCIRegulament
 from common.pagination.pagination import CustomPagination
 
 
@@ -23,29 +23,29 @@ logger = logging.getLogger('django')
 
 ALPPIDEVEL = os.getenv('ALPPIDEVEL')
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class DRCTStudentInternalNoteView(APIView, BaseDRCTStudentInternalNote):
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
+class CTCIRegulamentView(APIView, BaseCTCIRegulament):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
     def get(self, request, pk, format=None) -> ResponseHelper:
 
         try:
-            drct_student_internal_note_obj, error = self.get_object(pk)
+            ct_ci_regulament_obj, error = self.get_object(pk)
             if error:
                 return error
             
-            serializer = DRCTStudentInternalNoteSerializer(drct_student_internal_note_obj)
+            serializer = CTCIRegulamentSerializer(ct_ci_regulament_obj)
             return  ResponseHelper.HTTP_200({'results': serializer.data})
 
         except Exception as error:
-            message = 'Problemas ao visualizar DRCTStudentInternalNote'
+            message = 'Problemas ao visualizar CTCIRegulament'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class UpdateDRCTStudentInternalNoteView(APIView, BaseDRCTStudentInternalNote):
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
+class UpdateCTCIRegulamentView(APIView, BaseCTCIRegulament):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
@@ -53,11 +53,11 @@ class UpdateDRCTStudentInternalNoteView(APIView, BaseDRCTStudentInternalNote):
         try:
             data = request.data
 
-            drct_student_internal_note_obj, error = self.get_object(pk)
+            ct_ci_regulament_obj, error = self.get_object(pk)
             if error:
                 return error
 
-            serializer = DRCTStudentInternalNoteSerializer(drct_student_internal_note_obj, data=data)
+            serializer = CTCIRegulamentSerializer(ct_ci_regulament_obj, data=data)
             if serializer.is_valid():
                 serializer.save()
                 return  ResponseHelper.HTTP_200({'results': serializer.data})
@@ -65,33 +65,33 @@ class UpdateDRCTStudentInternalNoteView(APIView, BaseDRCTStudentInternalNote):
             return  ResponseHelper.HTTP_400({'detail': serializer.errors})
 
         except Exception as error:
-            message = 'Problemas ao editar DRCTStudentInternalNote'
+            message = 'Problemas ao editar CTCIRegulament'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class ListDRCTStudentInternalNoteView(APIView, CustomPagination):
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
+class ListCTCIRegulamentView(APIView, CustomPagination):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
     def get(self, request, format=None) -> ResponseHelper:
         try:
-            student_internal_note = DRCTStudentInternalNote.objects.all()
-            drct_student_internal_note_paginate = self.paginate_queryset(
-                student_internal_note, request, view=self)
+            penality = CTCIRegulament.objects.all()
+            ct_ci_regulament_paginate = self.paginate_queryset(
+                penality, request, view=self)
 
-            serializer = DRCTStudentInternalNoteSerializer(
-                drct_student_internal_note_paginate, many=True)
+            serializer = CTCIRegulamentSerializer(
+                ct_ci_regulament_paginate, many=True)
             return  ResponseHelper.HTTP_200(self.get_paginated_response(serializer.data).data)
 
 
         except Exception as error:
-            message = 'Problemas ao listar todos os DRCTStudentInternalNote.'
+            message = 'Problemas ao listar todos os CTCIRegulament.'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class CreateDRCTStudentInternalNoteView(APIView):
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
+class CreateCTCIRegulamentView(APIView):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
@@ -99,7 +99,7 @@ class CreateDRCTStudentInternalNoteView(APIView):
         try:
             data = request.data
 
-            serializer = DRCTStudentInternalNoteSerializer(data=data)
+            serializer = CTCIRegulamentSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
                 return  ResponseHelper.HTTP_201({'results': serializer.data})
@@ -107,52 +107,26 @@ class CreateDRCTStudentInternalNoteView(APIView):
             return  ResponseHelper.HTTP_400({'detail': serializer.errors})
 
         except Exception as error:
-            message = 'Problemas ao cadastrar DRCTStudentInternalNote'
+            message = 'Problemas ao cadastrar CTCIRegulament'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
 @method_decorator(permission_required(SUPERUSER), name='dispatch')
-class DeleteDRCTStudentInternalNoteView(APIView, BaseDRCTStudentInternalNote):
+class DeleteCTCIRegulamentView(APIView, BaseCTCIRegulament):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
     def delete(self, request, pk, format=None) -> ResponseHelper:
         try:
-            drct_student_internal_note_obj, error = self.get_object(pk)
+            ct_ci_regulament_obj, error = self.get_object(pk)
             if error:
                 return error
             
-            drct_student_internal_note_obj.delete()
+            ct_ci_regulament_obj.delete()
             return  ResponseHelper.HTTP_204()
 
         except Exception as error:
-            message = 'Problemas ao deletar DRCTStudentInternalNote'
-            logger.error({'results': message, 'error:': str(error)})
-            return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
-
-
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
-class ChangeStatusDRCTStudentInternalNoteView(APIView, BaseDRCTStudentInternalNote):
-    authentication_classes  = [JwtAutenticationAlppi]
-    permission_classes = [IsViewAllowed, HasPermission]
-    
-    def put(self, request, pk, format=None) -> ResponseHelper:
-        try:
-            data = request.data
-            drct_student_internal_note_obj, error = self.get_object(pk)
-            if error:
-                return error
-
-            drct_student_internal_note_obj.is_active = data.get('is_active')
-            drct_student_internal_note_obj.save()
-            logger.info('Alterando status do request para {}.'.format(data.get('is_active')))
-
-            message = 'DRCTStudentInternalNote atualizado com sucesso.'
-            return  ResponseHelper.HTTP_200({'results': message})
-
-        except Exception as error:
-
-            message = 'Problemas ao alterar status do request'
+            message = 'Problemas ao deletar CTCIRegulament'
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
