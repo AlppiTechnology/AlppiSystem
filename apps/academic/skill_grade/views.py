@@ -119,7 +119,7 @@ class SkillGradeView(APIView):
             return ResponseHelper.HTTP_200({
                 'editable': editable,
                 'term_grade': school_year_date_info.get('grade'),
-                'skill': class_setting_obj.skill,
+                'skill': school_year_date_info.get('skill'),
                 'skill_grades': skill_grades
             })
 
@@ -134,10 +134,9 @@ class UpdateSkillGradeView(APIView):
     authentication_classes = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
-    def put(self, request, class_id, pedagogical_id, skill_id, format=None) -> ResponseHelper:
+    def put(self, request, class_id, pedagogical_id, term_id, skill_id, format=None) -> ResponseHelper:
         try:
             data = request.data
-            term = int(request.GET.get("term", '1'))
             skill_grades = data.get("skill_grades", [])
 
             jwt_token = request.jwt_token
@@ -166,7 +165,7 @@ class UpdateSkillGradeView(APIView):
                     return employee_visualisation_error
 
             school_year_date_info, error = BSYD.get_school_year_date_info(
-                class_setting_obj.fk_school_year, term)
+                class_setting_obj.fk_school_year, term_id)
             if error:
                 return error
 
@@ -196,7 +195,7 @@ class UpdateSkillGradeView(APIView):
                     SkillGrade.objects.filter(
                         pk_skill_grade=skill_grade.get("pk_skill_grade"),
                         fk_class = class_id,
-                        fk_term = term,
+                        fk_term = term_id,
                         fk_subject = pedagogical_setting_data.get('fk_subject'),
                         fk_skill=skill_id,
                         fk_student_user = skill_grade.get('fk_student_user')

@@ -13,7 +13,7 @@ from alppi.auth.authentication import JwtAutenticationAlppi
 from alppi.auth.permissions import HasPermission, IsViewAllowed
 from alppi.responses import ResponseHelper
 from alppi.utils.decorators import permission_required
-from alppi.utils.groups import SUPERUSER
+from alppi.utils.groups import TEACHER
 from apps.academic.models import PedagogicalSetting
 from common.pagination.pagination import CustomPagination
 
@@ -22,7 +22,7 @@ logger = logging.getLogger('django')
 
 ALPPIDEVEL = os.getenv('ALPPIDEVEL')
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(TEACHER), name='dispatch')
 class ListPedagogicalView(APIView, CustomPagination):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]

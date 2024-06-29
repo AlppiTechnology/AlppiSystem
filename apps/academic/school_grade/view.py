@@ -12,7 +12,7 @@ from alppi.auth.authentication import JwtAutenticationAlppi
 from alppi.auth.permissions import HasPermission, IsViewAllowed
 from alppi.responses import ResponseHelper
 from alppi.utils.decorators import permission_required
-from alppi.utils.groups import SUPERUSER
+from alppi.utils.groups import SUPERUSER, ADMINISTRATOR
 from apps.academic.school_grade.school_grade import BaseSchoolGrade
 from apps.academic.school_grade.serializer import SchoolGradeSerializer
 from apps.academic.models import SchoolGrade
@@ -24,7 +24,7 @@ logger = logging.getLogger('django')
 
 ALPPIDEVEL = os.getenv('ALPPIDEVEL')
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class ListSchoolGradeView(APIView, CustomPagination):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -54,7 +54,7 @@ class ListSchoolGradeView(APIView, CustomPagination):
 
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class SchoolGradeView(APIView, BaseSchoolGrade):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -75,7 +75,7 @@ class SchoolGradeView(APIView, BaseSchoolGrade):
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class UpdateSchoolGradeView(APIView):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
@@ -101,7 +101,7 @@ class UpdateSchoolGradeView(APIView):
             logger.error({'results': message, 'error:': str(error)})
             return ResponseHelper.HTTP_500({'detail': message, 'error:': str(error)})
 
-@method_decorator(permission_required(SUPERUSER), name='dispatch')
+@method_decorator(permission_required(ADMINISTRATOR), name='dispatch')
 class CreateSchoolGradeView(APIView):
     authentication_classes  = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]

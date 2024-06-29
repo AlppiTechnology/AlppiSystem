@@ -46,7 +46,6 @@ class BaseStudentPresence():
                               term: int, chosen_date: str):
 
         query_result = StudentPresence.objects.filter(
-            fk_student_user__studentclass__status=1,
             fk_subject=subject,
             fk_class=class_id,
             fk_term=term,

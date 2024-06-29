@@ -45,11 +45,9 @@ class BaseSubjectGrade():
     def get_students_grade(self, subject: int, class_id: int, term: int):
 
         query_result = SubjectGrade.objects.filter(
-            fk_student_user__studentclass__status=1,
             fk_subject=subject,
             fk_class=class_id,
-            fk_term=term
-
+            fk_term=term,
         ).annotate(
             student_name=F('fk_student_user__username'),
             registration=F('fk_student_user__registration'),
@@ -62,7 +60,7 @@ class BaseSubjectGrade():
             'grade_2',
             'grade_3',
             'grade_4',
-            'grade_5'
+            'grade_5',
         )
 
         return list(query_result)

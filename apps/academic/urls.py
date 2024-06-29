@@ -100,11 +100,11 @@ urlpatterns = [
 
     # ------------- Subject Grade / Notas de Discilpinas -------------
     path('subjectgrade/<int:class_id>/<int:pedagogical_id>/', subject_grade_view.SubjectGradeView.as_view(), name='subject_grade'),
-    path('subjectgrade/<int:class_id>/<int:pedagogical_id>/update/', subject_grade_view.UpdateSubjectGradeView.as_view(), name='subject_grade_update'),
+    path('subjectgrade/<int:class_id>/<int:pedagogical_id>/<int:term_id>/update/', subject_grade_view.UpdateSubjectGradeView.as_view(), name='subject_grade_update'),
 
     # ------------- Subject Grade / Notas de Discilpinas -------------
     path('skillgrade/<int:class_id>/<int:pedagogical_id>/<int:skill_id>/', skill_grade_view.SkillGradeView.as_view(), name='skill_grade'),
-    path('skillgrade/<int:class_id>/<int:pedagogical_id>/<int:skill_id>/update/', skill_grade_view.UpdateSkillGradeView.as_view(), name='skill_grade_update'),
+    path('skillgrade/<int:class_id>/<int:pedagogical_id>/<int:term_id>/<int:skill_id>/update/', skill_grade_view.UpdateSkillGradeView.as_view(), name='skill_grade_update'),
 
    # ------------- Subject Grade / Notas de Discilpinas -------------
     path('studentpresence/<int:class_id>/<int:pedagogical_id>/', student_presence_view.StudentPresenceView.as_view(), name='student_presence'),

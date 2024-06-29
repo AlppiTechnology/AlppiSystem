@@ -19,10 +19,8 @@ from apps.academic.models import SubjectGrade
 from apps.academic.pedagogical_setting.pedagogical_setting import BasePedagogicalSetting
 from apps.academic.school_year_date.school_year_date import BaseSchoolYearDate
 from apps.academic.student_class.student_class import BaseStudentClass
-from apps.academic.subject_grade.serializer import SubjectGradeSerializer
 from apps.academic.subject_grade.subject_grade import BaseSubjectGrade
 from apps.academic.subject_grade.validations import valeidate_sum_grades, validate_employee_visualisation, validate_term_date
-from common.pagination.pagination import CustomPagination
 
 
 logger = logging.getLogger('django')
@@ -118,7 +116,7 @@ class SubjectGradeView(APIView):
             return ResponseHelper.HTTP_200({
                 'editable': editable,
                 'term_grade': school_year_date_info.get('grade'),
-                'skill': class_setting_obj.skill,
+                'skill': school_year_date_info.get('skill'),
                 'grades': grades
             })
 
@@ -133,10 +131,9 @@ class UpdateSubjectGradeView(APIView):
     authentication_classes = [JwtAutenticationAlppi]
     permission_classes = [IsViewAllowed, HasPermission]
 
-    def put(self, request, class_id, pedagogical_id, format=None) -> ResponseHelper:
+    def put(self, request, class_id, pedagogical_id, term_id, format=None) -> ResponseHelper:
         try:
             data = request.data
-            term = int(request.GET.get("term", '1'))
             grades = data.get("grades", [])
 
             jwt_token = request.jwt_token
@@ -164,7 +161,7 @@ class UpdateSubjectGradeView(APIView):
                     return employee_visualisation_error
 
             school_year_date_info, error = BSYD.get_school_year_date_info(
-                class_setting_obj.fk_school_year, term)
+                class_setting_obj.fk_school_year, term_id)
             if error:
                 return error
 
@@ -194,7 +191,7 @@ class UpdateSubjectGradeView(APIView):
                     SubjectGrade.objects.filter(
                         pk_subject_grade=grade.get("pk_subject_grade"),
                         fk_class = class_id,
-                        fk_term = term,
+                        fk_term = term_id,
                         fk_subject = pedagogical_setting_data.get('fk_subject'),
                         fk_student_user = grade.get('fk_student_user')
                     ).update(

@@ -134,7 +134,7 @@ class UpdateStudentPresenceView(APIView):
     def put(self, request, class_id, pedagogical_id, format=None) -> ResponseHelper:
         try:
             data = request.data
-            chosen_date =  request.GET.get("date", None)
+            chosen_date =  data.pop('date')
             presences = data.get("presences", [])
 
             error = validate_chosen_date(chosen_date)

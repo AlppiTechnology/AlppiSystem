@@ -46,7 +46,6 @@ class BaseSkillGrade():
                                  class_id: int, term: int):
 
         query_result = SkillGrade.objects.filter(
-            fk_student_user__studentclass__status=1,
             fk_subject=subject,
             fk_skill=skill_id,
             fk_class=class_id,
